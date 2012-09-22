@@ -1,0 +1,132 @@
+
+
+CREATE TABLE `t_customer_test` (
+  `COM_CD` varchar(4) NOT NULL,
+  `CUSTOMER_ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `CUSTOMER_NM` varchar(20) DEFAULT NULL,
+  `C_TELNO` varchar(20) DEFAULT NULL,
+  `H_TELNO` varchar(20) DEFAULT NULL,
+  `FAX_NO` varchar(20) DEFAULT NULL,
+  `COMPANY` varchar(100) DEFAULT NULL,
+  `DEPARTMENT` varchar(100) DEFAULT NULL,
+  `JOB_TITLE` varchar(100) DEFAULT NULL,
+  `EMAIL` varchar(100) DEFAULT NULL,
+  `CUSTOMER_TYPE` varchar(4) DEFAULT NULL,
+  `WOO_NO` varchar(8) DEFAULT NULL,
+  `CUSTOMER_ADDR` varchar(120) DEFAULT NULL,
+  `CUSTOMER_ETC` varchar(100) DEFAULT NULL,
+  `C_TELNO1` varchar(20) DEFAULT NULL,
+  `H_TELNO1` varchar(20) DEFAULT NULL,
+  `UPDATE_DATE` varchar(14) DEFAULT NULL,
+  PRIMARY KEY (`CUSTOMER_ID`),
+  KEY `idx_T_CUSTOMER_TEST01` (`COM_CD`,`CUSTOMER_ID`),
+  KEY `idx_T_CUSTOMER_TEST02` (`C_TELNO1`),
+  KEY `idx_T_CUSTOMER_TEST03` (`H_TELNO1`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=euckr;
+
+
+CREATE TABLE `t_customer_history_test` (
+  `COM_CD` varchar(4) NOT NULL,
+  `CUSTOMER_ID` bigint(20) unsigned NOT NULL,
+  `TOND_DD` varchar(8) NOT NULL,
+  `TONG_TIME` varchar(6) NOT NULL,
+  `TONG_USER` varchar(45) NOT NULL,
+  `CALL_TYPE` varchar(1) DEFAULT NULL,
+  `CONSULT_RESULT` varchar(4) DEFAULT NULL,
+  `CONSULT_TYPE` varchar(4) DEFAULT NULL,
+  `TONG_CONTENTS` varchar(100) DEFAULT NULL,
+  `TONG_TELNO` varchar(20) DEFAULT NULL,
+  `TELNO_TYPE` varchar(4) DEFAULT NULL,
+  `CUSTOMER_NM` varchar(20) DEFAULT NULL,
+  `BK_YN` varchar(1) DEFAULT NULL,
+  `HANDLE_TYPE` varchar(1) DEFAULT '0',
+  `CALL_BACK_YN` varchar(1) DEFAULT 'N',
+  `CALL_BACK_RESULT` varchar(1) DEFAULT '2',
+  `CALL_BACK_AGENT` varchar(50) DEFAULT NULL,
+  `UPDATE_DATE` varchar(14) DEFAULT NULL,
+  `PREV_TONG_DD` varchar(8) DEFAULT NULL,
+  `PREV_TONG_TIME` varchar(6) DEFAULT NULL,
+  `PREV_TONG_USER` varchar(45) DEFAULT NULL,
+  `TRANS_YN` varchar(1) DEFAULT NULL,
+  PRIMARY KEY (`COM_CD`,`CUSTOMER_ID`,`TOND_DD`,`TONG_TIME`,`TONG_USER`),
+  KEY `idx_T_CUSTOMER_HISTORY_TEST01` (`COM_CD`,`CUSTOMER_ID`,`TOND_DD`,`TONG_TIME`,`TONG_USER`),
+  KEY `idx_T_CUSTOMER_HISTORY_TEST02` (`COM_CD`,`TOND_DD`,`TONG_TIME`,`TONG_USER`),
+  KEY `idx_T_CUSTOMER_HISTORY_TEST03` (`CUSTOMER_NM`),
+  KEY `idx_T_CUSTOMER_HISTORY_TEST04` (`PREV_TONG_DD`,`PREV_TONG_TIME`,`PREV_TONG_USER`,`TRANS_YN`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+
+
+CREATE TABLE `t_customer_telno_test` (
+  `COM_CD` varchar(4) NOT NULL,
+  `CUSTOMER_ID` bigint(20) unsigned NOT NULL,
+  `TELNO_TYPE` varchar(4) DEFAULT NULL,
+  `TELNO` varchar(20) NOT NULL,
+  PRIMARY KEY (`COM_CD`,`CUSTOMER_ID`,`TELNO`),
+  KEY `idxt_customer_telno_test01` (`COM_CD`,`CUSTOMER_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+
+--테스트 데이터 백업
+truncate table t_customer_test;
+truncate table t_customer_history_test;
+truncate table t_customer_telno_test;
+
+alter table t_customer_test disable keys;
+
+insert into `t_customer_test` 
+select * from t_customer;
+commit;
+
+alter table t_customer_test enable keys;
+
+insert into t_customer_history_test
+select * from t_customer_history;
+
+insert into t_customer_telno_test
+select * from t_customer_telno;
+
+commit;
+
+--테스트 데이터 복구
+
+truncate table t_customer;
+truncate table t_customer_history;
+truncate table t_customer_telno;
+
+alter table t_customer disable keys;
+
+insert into `t_customer` 
+select * from t_customer_test;
+commit;
+
+alter table t_customer enable keys;
+
+insert into t_customer_history
+select * from t_customer_history_test;
+
+insert into t_customer_telno
+select * from t_customer_telno_test;
+
+commit;
+
+
+
+--회사코드 변경
+update t_call_history                  set com_cd = '8888';
+update t_company                       set com_cd = '8888';
+update t_customer                      set com_cd = '8888';
+update t_customer_excel_backup         set com_cd = '8888';
+update t_customer_excel_tmp            set com_cd = '8888';
+update t_customer_history              set com_cd = '8888';
+update t_customer_history_excel_backup set com_cd = '8888';
+update t_customer_history_temp         set com_cd = '8888';
+update t_customer_history_test         set com_cd = '8888';
+update t_customer_telno                set com_cd = '8888';
+update t_customer_telno_excel_backup   set com_cd = '8888';
+update t_customer_telno_test           set com_cd = '8888';
+update t_customer_temp                 set com_cd = '8888';
+update t_customer_test                 set com_cd = '8888';
+update t_l_code                        set com_cd = '8888';
+update t_s_code                        set com_cd = '8888';
+update t_schedule                      set com_cd = '8888';
+update t_user                          set com_cd = '8888';
+
