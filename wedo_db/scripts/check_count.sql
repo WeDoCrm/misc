@@ -1,0 +1,1 @@
+select count(*) from WeDo_DB.t_l_code;

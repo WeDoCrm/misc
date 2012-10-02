@@ -1,0 +1,6 @@
+CREATE USER 'WeDo_DB'@'localhost' IDENTIFIED BY 'Genesys!@#';
+GRANT ALL PRIVILEGES ON *.* TO 'WeDo_DB'@'localhost'
+    WITH GRANT OPTION;
+CREATE USER 'WeDo_DB'@'%' IDENTIFIED BY 'Genesys!@#';
+GRANT ALL PRIVILEGES ON *.* TO 'WeDo_DB'@'%'
+    WITH GRANT OPTION;
