@@ -596,26 +596,8 @@ Public Class MainFrmCDB
                 ExcelResult = UPLOADRESULT.SUCCESS
 
                 If dt.Rows(nExcelCnt)(0).ToString().Trim = "" Then
-                    nErrCnt += 1
-
-                    ExcelResult = UPLOADRESULT.NO_CUSTOMER_NAME
-                    WriteLog("i : " & nExcelCnt & _
-                             "[" & dt.Rows(nExcelCnt)(0).ToString().Trim & "]" & _
-                             "[" & dt.Rows(nExcelCnt)(1).ToString().Trim & "]" & _
-                             "[" & dt.Rows(nExcelCnt)(2).ToString().Trim & "]" & _
-                             "[" & dt.Rows(nExcelCnt)(3).ToString().Trim & "]" & _
-                             "[" & dt.Rows(nExcelCnt)(4).ToString().Trim & "]" & _
-                             "[" & dt.Rows(nExcelCnt)(5).ToString().Trim & "]" & _
-                             "[" & dt.Rows(nExcelCnt)(6).ToString().Trim & "]" & _
-                             "[" & dt.Rows(nExcelCnt)(7).ToString().Trim & "]" & _
-                             "[" & dt.Rows(nExcelCnt)(8).ToString().Trim & "]" & _
-                             "[" & dt.Rows(nExcelCnt)(9).ToString().Trim & "]" & _
-                             "[" & dt.Rows(nExcelCnt)(10).ToString().Trim & "]" & _
-                             "[" & dt.Rows(nExcelCnt)(11).ToString().Trim & "]" & _
-                             MsgNoCustomerName)
-                    'Continue For
+                    Continue For
                 End If
-
 
                 If (dt.Rows(nExcelCnt)(4).ToString().Trim() = "" _
                     And dt.Rows(nExcelCnt)(5).ToString().Trim() = "") Then
