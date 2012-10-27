@@ -38,6 +38,7 @@ Module MiniCTI
     Public Const config_file As String = "\config\MiniCTI_config.xml"
     Public Const gsAppVersion As String = "Ver 2.1.1.2"
     Public gsPopUpOption As String = "MDI"
+    Public LogName As String = "\log\DbMgmt_"
 
     Public gsUseARS As String = "N"
 
@@ -117,8 +118,8 @@ Module MiniCTI
     End Function
 
     Public Function IsHPNumber(ByVal num As String) As Boolean
-        If num.Trim() = "" Then
-            Return True
+        If num.Trim() = "" Or num.Length > 11 Or num.Length < 10 Then
+            Return False
         End If
 
         Dim tel_no As String = num.Trim.Substring(0, 3)
@@ -168,17 +169,7 @@ Module MiniCTI
         End Try
     End Sub
 
-    Public Sub SettoolBar(ByVal initbol As Boolean, ByVal selectbol As Boolean, ByVal savebol As Boolean, ByVal deletebol As Boolean, ByVal helpbol As Boolean, ByVal formexitbol As Boolean, ByVal exitbol As Boolean)
-        'FRM_MAIN.toolInit.Enabled = initbol
-        'FRM_MAIN.toolSelect.Enabled = selectbol
-        'FRM_MAIN.toolSave.Enabled = savebol
-        'FRM_MAIN.toolDelete.Enabled = deletebol
-        'FRM_MAIN.toolHelp.Enabled = helpbol
-        'FRM_MAIN.toolFormExit.Enabled = formexitbol
-        'FRM_MAIN.toolExit.Enabled = exitbol
-
-    End Sub
-    Public  Function Find_Query(ByVal s_code As String) As String
+    Public Function Find_Query(ByVal s_code As String) As String
         Dim SQL As String = ""
         Try
             SQL = " SELECT '' S_MENU_NM,'XXXX' S_MENU_CD UNION ALL SELECT S_MENU_NM,S_MENU_CD FROM T_S_CODE WHERE  COM_CD = '" & gsCOM_CD & "' AND L_MENU_CD = '" & s_code & "'"
@@ -256,55 +247,6 @@ Module MiniCTI
         End Try
     End Function
 
-    'Public Function GetDT(ByVal constring As String, ByVal strSql As String) As DataTable
-
-    '    Dim s_dbcon As String = constring
-    '    Dim con As SqlClient.SqlConnection
-    '    Dim com As SqlClient.SqlCommand
-    '    Dim da As SqlClient.SqlDataAdapter
-    '    Dim dt As New DataTable
-    '    Dim temp As String = ""
-    '    Dim i As Integer
-
-    '    con = New SqlClient.SqlConnection(s_dbcon)
-    '    com = New SqlClient.SqlCommand
-    '    da = New SqlClient.SqlDataAdapter(com)
-
-    '    Try
-    '        com.CommandType = CommandType.Text
-    '        com.CommandText = strSql
-
-    '        con.Open()
-    '        com.CommandTimeout = 60000
-    '        '자동증가 컬럼 추가 (DataGridView 페이징을 위해서)
-    '        dt.Columns.Add(Increment_Column(1, 1))
-    '        da.Fill(dt)
-    '        com.Parameters.Clear()
-    '    Catch ex As Exception
-    '        Call WriteLog("eVoice.clsWebAppComModule.GetData_table - " & strSql & ">>" & com.CommandText & ":" & ex.ToString)
-    '    Finally
-    '        GetDT = dt
-    '        con.Close()
-    '        dt = Nothing
-    '        da = Nothing
-    '        com = Nothing
-    '        con = Nothing
-    '    End Try
-    'End Function
-
-    'Public Function Increment_Column(ByVal iSeed As Integer, ByVal iStep As Integer) As DataColumn
-    '    Dim col As New DataColumn()
-    '    Try
-    '        col.DataType = System.Type.GetType("System.Int32")
-    '        col.ColumnName = "newID"
-    '        col.AutoIncrement = True
-    '        col.AutoIncrementSeed = iSeed
-    '        col.AutoIncrementStep = iStep
-    '    Catch ex As Exception
-    '        WriteLog("eVoice.clsWebAppComModule.Setting_DrpPage : " & ex.ToString)
-    '    End Try
-    '    Increment_Column = col
-    'End Function
 
     Public Function GetData_exe(ByVal constring As String, ByVal procedurename As String, ByVal ParamArray parameters() As String) As Boolean
 
@@ -352,55 +294,6 @@ Module MiniCTI
 
     End Function
 
-    'Public Function GetData_table(ByVal constring As String, ByVal procedurename As String, ByVal ParamArray parameters() As String) As DataTable
-
-    '    Dim s_dbcon As String = constring  'ConfigurationManager.ConnectionStrings(constring).ConnectionString
-    '    Dim con As SqlClient.SqlConnection
-    '    Dim com As SqlClient.SqlCommand
-    '    Dim da As SqlClient.SqlDataAdapter
-    '    Dim dt As New DataTable
-    '    Dim temp As String = ""
-    '    Dim i As Integer
-
-    '    con = New SqlClient.SqlConnection(s_dbcon)
-    '    com = New SqlClient.SqlCommand
-    '    da = New SqlClient.SqlDataAdapter(com)
-
-    '    Try
-
-    '        If parameters.Length > 0 Then
-    '            For i = 0 To parameters.Length - 1
-    '                If i = 0 Then
-    '                    temp = "'" & parameters(i).Replace("'", "''") & "'"
-    '                Else
-    '                    temp = temp & ",'" & parameters(i).Replace("'", "''") & "'"      '두번째 이후 파라메터들을 실행구문에 추가
-    '                End If
-    '            Next
-    '        End If
-
-    '        If procedurename.StartsWith("P_") = True Then
-    '            com.CommandText = "Exec " & procedurename & " " & temp    '프로시져 실행구문
-    '        Else
-    '            com.CommandText = procedurename     '쿼리 실행구문
-    '        End If
-    '        'If ConfigurationManager.AppSettings("LOG").ToString.ToUpper = "Y" Then _
-    '        'eVoice_Common.eVoiceLog.WriteLog("eVoice.clsWebAppComModule.GetData_table - ", com.CommandText, "debug")
-    '        com.Connection = con
-    '        con.Open()
-    '        da.Fill(dt)
-    '        com.Parameters.Clear()
-    '    Catch ex As Exception
-    '        'Call WriteLog("Exception : " & GetData_table--> procedurename & ">>" & com.CommandText & ":" & ex.ToString )
-    '    Finally
-    '        GetData_table = dt
-    '        con.Close()
-    '        dt = Nothing
-    '        da = Nothing
-    '        com = Nothing
-    '        con = Nothing
-    '    End Try
-    'End Function
-
     Public Sub WriteLog(ByVal msg As String)
 
         Dim strNow As String
@@ -410,7 +303,7 @@ Module MiniCTI
             strNow = Format(Now, "yyyyMMddHHmmss")
 
             '파일 스트림 생성
-            Dim fs As FileStream = New FileStream(file_path & "\log\TStoryWorld_" & strNow.Substring(0, 8) & ".log", FileMode.Append)
+            Dim fs As FileStream = New FileStream(file_path & LogName & strNow.Substring(0, 8) & ".log", FileMode.Append)
 
             '파일 입력 작업을 위해 StreamWriter 객체를 얻는다
             Dim sw As StreamWriter = New StreamWriter(fs, System.Text.Encoding.Default)
@@ -462,6 +355,7 @@ Module MiniCTI
         End Try
 
     End Sub
+
     Public Function Mysql_GetData_table(ByVal constring As String, ByVal sqltext As String, ByVal ParamArray parameters() As String) As DataTable
 
         Dim s_dbcon As String = constring
@@ -675,104 +569,6 @@ Module MiniCTI
 
     End Sub
 
-    Public Sub Excells_Import(ByVal filepath As String)
-        Dim dt As DataTable
-        Dim dt2 As New DataTable
-        Dim temp As String = ""
-        Dim ext As String = ""
-        Dim i As Integer = 0
-        Dim k As Integer = 0
-
-        Try
-            i = filepath.LastIndexOf(".")
-            If i > 0 Then ext = filepath.Substring(i + 1)
-            dt = GetDataFromExcel(filepath, ext)
-            'WriteLog("excells_Import : " & dt.Rows.Count & " ext:" & ext)
-            ''테이블에 insert
-            If gbIsCustomerTablePatched Then
-                If (giCustomerImportColCount + 3) <> dt.Columns.Count Then
-                    MsgBox("고객정보를 아래 양식에 맞게 수정하세요." & vbNewLine & vbNewLine _
-                  & "경로: {프로그램설치경로}\sample\고객정보대장-샘플.xlsx", _
-                        MsgBoxStyle.OkOnly, "포맷오류")
-                    Return
-                End If
-            Else
-                If giCustomerImportColCount <> dt.Columns.Count Then
-                    MsgBox("고객정보를 아래 양식에 맞게 수정하세요." & vbNewLine & vbNewLine _
-                  & "경로: {프로그램설치경로}\sample\고객정보대장-샘플.xlsx", _
-                        MsgBoxStyle.OkOnly, "포맷오류")
-                    Return
-                End If
-            End If
-
-            For i = 0 To dt.Rows.Count - 1
-                'WriteLog("i : " & i & " dt.Rows(i)(0) : " & dt.Rows(i)(0).ToString().Trim & " dt.Rows(i)(1) : " & dt.Rows(i)(1).ToString().Trim & " dt.Rows(i)(2) : " & dt.Rows(i)(2).ToString().Trim & " dt.Rows(i)(3) : " & dt.Rows(i)(3).ToString().Trim)
-                '칼럼명인 경우 스킵
-                If dt.Rows(i)(0).ToString().Trim = gsCheckCustomerColumnName Then
-                    Continue For
-                End If
-
-                If dt.Rows(i)(0).ToString().Trim <> "" Then
-
-                    If (gbIsCustomerTablePatched) Then
-                        temp = "INSERT INTO T_CUSTOMER(COM_CD,CUSTOMER_NM, " & _
-                                "COMPANY,DEPARTMENT,JOB_TITLE, " & _
-                                "C_TELNO,H_TELNO,FAX_NO,EMAIL,CUSTOMER_TYPE,WOO_NO, " & _
-                                "CUSTOMER_ADDR,CUSTOMER_ETC,C_TELNO1,H_TELNO1) " & _
-                                " Values('" & _
-                                gsCOM_CD & "','" & _
-                                dt.Rows(i)(0).ToString().Trim & "','" & _
-                                dt.Rows(i)(1).ToString().Trim & "','" & _
-                                dt.Rows(i)(2).ToString().Trim & "','" & _
-                                dt.Rows(i)(3).ToString().Trim & "','" & _
-                                dt.Rows(i)(4).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(i)(5).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(i)(6).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(i)(7).ToString().Trim & "','" & _
-                                dt.Rows(i)(8).ToString().Trim & "','" & _
-                                dt.Rows(i)(9).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(i)(10).ToString().Trim & "','" & _
-                                dt.Rows(i)(11).ToString().Trim & "','" & _
-                                dt.Rows(i)(4).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(i)(5).ToString().Replace("-", "").Replace(" ", "").Trim & "')"
-                    Else
-                        temp = "INSERT INTO T_CUSTOMER(COM_CD,CUSTOMER_NM, " & _
-                                "C_TELNO,H_TELNO,FAX_NO,EMAIL,CUSTOMER_TYPE,WOO_NO, " & _
-                                "CUSTOMER_ADDR,CUSTOMER_ETC,C_TELNO1,H_TELNO1) " & _
-                                " Values('" & _
-                                gsCOM_CD & "','" & _
-                                dt.Rows(i)(0).ToString().Trim & "','" & _
-                                dt.Rows(i)(1).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(i)(2).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(i)(3).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(i)(4).ToString().Trim & "','" & _
-                                dt.Rows(i)(5).ToString().Trim & "','" & _
-                                dt.Rows(i)(6).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(i)(7).ToString().Trim & "','" & _
-                                dt.Rows(i)(8).ToString().Trim & "','" & _
-                                dt.Rows(i)(1).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(i)(2).ToString().Replace("-", "").Replace(" ", "").Trim & "') "
-                    End If
-
-                    'WriteLog(temp)
-                    dt2 = Mysql_GetData_table(gsConString, temp)
-                    k += 1
-                    dt2.Reset()
-                End If
-            Next
-            WriteLog("*** Target Count : " & dt.Rows.Count & " => Insert Count : " & k & " ***")
-            MsgBox(k & "건이 처리되었습니다.", MsgBoxStyle.OkOnly, "정보")
-
-        Catch ex As Exception
-            WriteLog(ex.ToString)
-        Finally
-            dt = Nothing
-            dt2 = Nothing
-            Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default
-            If k > 0 Then Call Audit_Log(AUDIT_TYPE.CUSTOMER_IMPORT, "Customer Import:" & CStr(k))
-        End Try
-    End Sub
-
     Public Function GetDataFromExcel(ByVal FilePath As String, ByVal FileExt As String) As DataTable
         Dim constring As String
 
@@ -838,166 +634,6 @@ Module MiniCTI
         End Try
 
     End Function
-
-    Public Sub Excells_Export(ByVal filepath As String)
-        Dim dt As DataTable
-        Dim temp As String = ""
-        Dim i As Integer = 0
-        Dim k As Integer = 0
-
-        Try
-            Dim excelApp As New Microsoft.Office.Interop.Excel.Application
-            If excelApp Is Nothing Then
-                MsgBox("엑셀이 설치되지 않았거나 다른문제가 있습니다.", MsgBoxStyle.OkOnly, "정보")
-                Exit Try
-            End If
-
-            'temp = "SELECT COM_CD,CUSTOMER_ID, CUSTOMER_NM,C_TELNO,H_TELNO,FAX_NO,CUSTOMER_TYPE,WOO_NO,CUSTOMER_ADDR,CUSTOMER_ETC FROM T_CUSTOMER ORDER BY COM_CD,CUSTOMER_ID LIMIT 0, 100 "
-            If (gbIsCustomerTablePatched) Then
-                temp = "SELECT COM_CD,CUSTOMER_ID, CUSTOMER_NM,COMPANY, DEPARTMENT, JOB_TITLE, C_TELNO,H_TELNO,FAX_NO, EMAIL, CUSTOMER_TYPE,WOO_NO,CUSTOMER_ADDR,CUSTOMER_ETC FROM T_CUSTOMER ORDER BY COM_CD,CUSTOMER_ID "
-            Else
-                temp = "SELECT COM_CD,CUSTOMER_ID, CUSTOMER_NM,C_TELNO,H_TELNO,FAX_NO,EMAIL, CUSTOMER_TYPE,WOO_NO,CUSTOMER_ADDR,CUSTOMER_ETC FROM T_CUSTOMER ORDER BY COM_CD,CUSTOMER_ID "
-
-            End If
-            dt = Mysql_GetData_table(gsConString, temp)
-
-            Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.WaitCursor
-
-            If File.Exists(filepath) Then File.Delete(filepath)
-
-            Dim excelBook As Microsoft.Office.Interop.Excel.Workbook = excelApp.Workbooks.Add
-            Dim excelWorksheet As Microsoft.Office.Interop.Excel.Worksheet = CType(excelBook.Worksheets(1), Microsoft.Office.Interop.Excel.Worksheet)
-            excelWorksheet.Name = gsExcelSheetCustomer '==>"고객정보"
-
-            With excelWorksheet
-                .Columns.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignLeft '셀 텍스트 맞춤을 left 로 지정. 
-                .Columns.NumberFormat = "@"   '셀서식을 텍스트 타입으로 지정. 회사번호나 전화번호가 0으로 시작되므로 필요.
-
-                ' 첫줄에 칼럼 타이틀을 써줍니다.
-                .Cells(1, 1) = "회사코드"
-                .Cells(1, 2) = "고객아이디"
-                .Cells(1, 3) = "고객명"
-                If (gbIsCustomerTablePatched) Then
-                    .Cells(1, 4) = "회사"
-                    .Cells(1, 5) = "소속"
-                    .Cells(1, 6) = "직급"
-                    .Cells(1, 7) = "직장 번호"
-                    .Cells(1, 8) = "핸드폰 번호"
-                    .Cells(1, 9) = "팩스 번호"
-                    .Cells(1, 10) = "이메일"
-                    .Cells(1, 11) = "고객유형 코드"
-                    .Cells(1, 12) = "우편번호"
-                    .Cells(1, 13) = "고객 주소"
-                    .Cells(1, 14) = "기타 정보"
-                Else
-                    .Cells(1, 4) = "직장 번호"
-                    .Cells(1, 5) = "핸드폰 번호"
-                    .Cells(1, 6) = "팩스 번호"
-                    .Cells(1, 7) = "이메일"
-                    .Cells(1, 8) = "고객유형 코드"
-                    .Cells(1, 9) = "우편번호"
-                    .Cells(1, 10) = "고객 주소"
-                    .Cells(1, 11) = "기타 정보"
-                End If
-
-                If dt.Rows.Count < 1 Then Exit Try
-
-                ' 두번째 줄 부터 데이터를 입력
-                For k = 0 To dt.Rows.Count - 1
-                    For i = 0 To dt.Columns.Count - 1
-                        .Cells(k + 2, i + 1) = dt.Rows(k).Item(i).ToString.Replace(" ", "")
-                    Next
-                Next
-
-                excelApp.Visible = False '저장후 자동으로 엑셀 파일이 열리지 않는다
-                ChDir("C:\")
-                excelApp.ActiveWorkbook.SaveAs(Filename:=filepath, _
-                                               Password:="", WriteResPassword:="", _
-                                               ReadOnlyRecommended:=False, CreateBackup:=False)
-            End With
-
-            MsgBox("처리되었습니다.", MsgBoxStyle.OkOnly, "정보")
-            'excelWorksheet = Nothing
-            excelBook.Close()
-            excelApp.Quit()
-            'System.Runtime.InteropServices.Marshal.ReleaseComO(bject(excelWorksheet))
-            'System.Runtime.InteropServices.Marshal.ReleaseComO(bject(excelBook))
-            'System.Runtime.InteropServices.Marshal.ReleaseComO(bject(excelApp))
-            excelApp = Nothing
-            excelBook = Nothing
-            excelWorksheet = Nothing
-        Catch ex As Exception
-            WriteLog(ex.ToString)
-        Finally
-            dt = Nothing
-            Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default
-            If k > 0 Then Call Audit_Log(AUDIT_TYPE.CUSTOMER_EXPORT, "Customer Export:" & CStr(k + 1))
-        End Try
-    End Sub
-
-    Public Sub Excel_Export2(ByVal filepath As String, ByVal title As String, ByVal DV As DataGridView, Optional ByVal TStyle As String = "")
-        Dim temp As String = ""
-        Dim i As Integer = 0
-        Dim k As Integer = 0
-        Dim Alp As String() = {"A", "B", "C", "D", "E", "F", "G", "H", _
-                               "I", "J", "K", "L", "M", "N", "O", "P", _
-                               "Q", "R", "S", "T", "U", "V", "W", "X", _
-                               "Y", "Z"}
-        Dim excelApp As New Microsoft.Office.Interop.Excel.Application
-        Dim excelBook As Microsoft.Office.Interop.Excel.Workbook
-        Dim excelWorksheet As Microsoft.Office.Interop.Excel.Worksheet
-        Try
-            If excelApp Is Nothing Then
-                MsgBox("엑셀이 설치되지 않았거나 다른문제가 있습니다.", MsgBoxStyle.OkOnly, "정보")
-                Exit Try
-            End If
-
-            Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.WaitCursor
-
-            If File.Exists(filepath) Then File.Delete(filepath)
-
-            excelBook = excelApp.Workbooks.Add
-            excelWorksheet = CType(excelBook.Worksheets(1), Microsoft.Office.Interop.Excel.Worksheet)
-            
-            With excelWorksheet
-                .Columns.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignLeft '셀 텍스트 맞춤을 left 로 지정. 
-                .Columns.NumberFormat = "@"   '셀서식을 텍스트 타입으로 지정. 회사번호나 전화번호가 0으로 시작되므로 필요.
-
-                'If DV.RowCount < 1 Then Exit Try
-                'MsgBox(DV.ColumnCount & "-" & DV.RowCount.ToString)
-                For i = 0 To DV.ColumnCount - 1
-                    'If DV.Columns(i).Displayed = True Then
-                    If TStyle.Contains(i.ToString & ",") Then
-                        .Range(Alp.GetValue(i).ToString & "1:" & Alp.GetValue(i).ToString & (DV.RowCount + 1).ToString).Columns.NumberFormat = "@"
-                    End If
-                    For k = 0 To DV.RowCount
-                        If k = 0 Then ' 첫줄에 칼럼 타이틀을 써줍니다.
-                            .Range(Alp.GetValue(i).ToString & "1").Font.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.DeepSkyBlue)
-                            .Cells(k + 1, i + 1) = DV.Columns(i).HeaderText.Replace(" ", "")
-                        Else  '  두번째 줄 부터 데이터를 입력
-                            .Cells(k + 1, i + 1) = DV.Rows(k - 1).Cells(i).Value.ToString.Replace(" ", "")
-                        End If
-                    Next
-                    ' End If
-                Next
-                excelApp.Visible = False '저장후 자동으로 엑셀 파일이 열리지 않는다
-                ChDir("C:\")
-                excelApp.ActiveWorkbook.SaveAs(Filename:=filepath, Password:="", WriteResPassword:="", ReadOnlyRecommended:=False, CreateBackup:=False)
-            End With
-
-            MsgBox("처리되었습니다.", MsgBoxStyle.OkOnly, "정보")
-        Catch ex As Exception
-            WriteLog(ex.ToString)
-        Finally
-            Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default
-            excelWorksheet = Nothing
-            excelBook = Nothing
-            excelApp.Quit()
-            excelApp = Nothing
-            GC.Collect()
-
-        End Try
-    End Sub
 
     Enum AUDIT_TYPE
         CUSTOMER_IMPORT = 0
@@ -1182,6 +818,7 @@ Module MiniCTI
                                                 "   KEY `idx_T_CUSTOMER_EXCEL_BACKUP03` (`H_TELNO1`) " & _
                                                 " ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=euckr; "
 
+ 
     Public sqlCreateCustomerExcelTmp As String = " CREATE TABLE `t_customer_excel_tmp` ( " & _
                                                 "   `COM_CD` varchar(4) NOT NULL, " & _
                                                 "   `CUSTOMER_ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT, " & _
@@ -1200,6 +837,7 @@ Module MiniCTI
                                                 "   `C_TELNO1` varchar(20) DEFAULT NULL, " & _
                                                 "   `H_TELNO1` varchar(20) DEFAULT NULL, " & _
                                                 "   `UPDATE_DATE` varchar(14) DEFAULT NULL, " & _
+                                                "   `UPLOAD_RESULT` varchar(1) DEFAULT NULL, " & _
                                                 "   PRIMARY KEY (`CUSTOMER_ID`), " & _
                                                 "   KEY `idx_T_CUSTOMER_EXCEL_TMP01` (`COM_CD`,`CUSTOMER_ID`), " & _
                                                 "   KEY `idx_T_CUSTOMER_EXCEL_TMP02` (`C_TELNO1`), " & _
@@ -1261,6 +899,7 @@ Module MiniCTI
                                             "        COMPANY,DEPARTMENT,JOB_TITLE,   " & _
                                             "        C_TELNO,H_TELNO,FAX_NO,EMAIL,if (ifnull(customer_type,'')='','03',customer_type),WOO_NO,   " & _
                                             "        CUSTOMER_ADDR,CUSTOMER_ETC,C_TELNO1,H_TELNO1 " & _
-                                            "   from t_customer_excel_tmp "
+                                            "   from t_customer_excel_tmp " & _
+                                            "  where upload_result = '0' "
 
 End Module

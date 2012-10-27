@@ -28,10 +28,26 @@ Public Class MainFrmCDB
         T_CUSTOMER_EXCEL_TMP = 3
     End Enum
 
+    Public Enum UPLOADRESULT
+        SUCCESS = 0
+        NO_HP_NO_PHONE = 1
+        PHONE_IS_HP = 2
+        HP_NO_HP = 3
+        NO_CUSTOMER_NAME = 4
+    End Enum
+
+
+    Dim MsgNoHPNoPhone As String = "전화번호/휴대폰 모두 없음"  'upload_result = '1'
+    Dim MsgPhoneIsHP As String = "전화가 휴대폰 형식"  'upload_result = '2'
+    Dim MsgHPNoHP As String = "휴대폰이 휴대폰 형식아님"  'upload_result = '3'  '정상 upload_result = '0'
+    Dim MsgNoCustomerName As String = "고객명 없음"
+
     Dim mTaskMode As TASKMODE = TASKMODE.INIT
+    Dim mCntTotal As Integer = 0
     Dim mCnt As Integer = 0
     Dim mCntDup As Integer = 0
     Dim mCntWrongPhoneFormat As Integer = 0
+    Dim mCntError As Integer = 0
 
     Public Sub New()
         ' This call is required by the Windows Form Designer.
@@ -42,6 +58,23 @@ Public Class MainFrmCDB
         switchTask()
         ' Add any initialization after the InitializeComponent() call.
 
+    End Sub
+
+    Private Sub MainFrmCDB_FormClosing(ByVal sender As Object, ByVal e As System.Windows.Forms.FormClosingEventArgs) Handles Me.FormClosing
+        If mTaskMode = TASKMODE.DELETED Then
+            If MsgBoxResult.Ok = MsgBox("고객데이터가 삭제된 상태입니다." & vbNewLine & _
+                                        "복구하거나 고객정보를 업로드완료후 종료하세요.", MsgBoxStyle.OkOnly, "데이터 삭제 경고") Then
+                e.Cancel = True
+            End If
+        End If
+
+
+        If mTaskMode = TASKMODE.UPLOADED Then
+            If MsgBoxResult.Ok = MsgBox("고객데이터가 삭제된 후 업로드가 완료되지 않았습니다." & vbNewLine & _
+                                        "복구하거나 고객정보를 업로드완료후 종료하세요.", MsgBoxStyle.OkOnly, "데이터 삭제 경고") Then
+                e.Cancel = True
+            End If
+        End If
     End Sub
 
     Private Sub MainFrmCDB_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
@@ -112,7 +145,18 @@ Public Class MainFrmCDB
             If Not doCommandSql(sqlCreateCustomerExcelTmp) Then
                 Return False
             End If
+        Else '테이블있지만, upload_result가 없는 경우 신규로 삭제/생성해줌.
+            If Not doExistTable(TABLEMODE.T_CUSTOMER_EXCEL_TMP, "upload_result") Then
+                Sql = "drop table t_customer_excel_tmp"
+                If Not doCommandSql(Sql) Then
+                    Return False
+                End If
+                If Not doCommandSql(sqlCreateCustomerExcelTmp) Then
+                    Return False
+                End If
+            End If
         End If
+
         Sql = "truncate table t_customer_excel_tmp"
         If Not doCommandSql(Sql) Then
             Return False
@@ -163,6 +207,7 @@ Public Class MainFrmCDB
             mCnt = 0
             mCntDup = 0
             mCntWrongPhoneFormat = 0
+            mCntError = 0
 
             Dim msgMerge As String
             If cbMergeYN.Checked Then
@@ -194,15 +239,9 @@ Public Class MainFrmCDB
                             If MsgBoxResult.Yes = MsgBox(" 정상 " & mCnt & "건" & vbNewLine & _
                                                          " 중복 " & mCntDup & "건" & vbNewLine & _
                                                          " 오류 " & mCntWrongPhoneFormat & "건(전화번호형식오류)" & vbNewLine & _
+                                                         " 오류 " & mCntError & "건(기타오류)" & vbNewLine & _
                                                          " 기존 고객정보와 중복건이 있습니다. 결과를 확인하시겠습니까? ", MsgBoxStyle.YesNo, "정보") Then
-                                Try
-                                    FRM_RESULT.ShowDialog()
-                                    FRM_RESULT.Focus()
-                                    FRM_RESULT.setSumCnt(mCnt, mCntDup)
-                                Catch ex As Exception
-                                    Call WriteLog(Me.Name & " : " & ex.ToString)
-                                End Try
-
+                                doShowResult()
                             End If
 
                             If MsgBoxResult.Yes = MsgBox("처리를 계속 진행하시겠습니까? " & vbNewLine _
@@ -241,14 +280,7 @@ Public Class MainFrmCDB
                         Else ' If mCntDup > 0 Then
                             If MsgBoxResult.Yes = MsgBox(" 정상 " & mCnt & "건" & vbNewLine & _
                                      "결과를 확인하시겠습니까? ", MsgBoxStyle.YesNo, "정보") Then
-                                Try
-                                    FRM_RESULT.ShowDialog()
-                                    FRM_RESULT.Focus()
-                                    FRM_RESULT.setSumCnt(mCnt, mCntDup)
-                                Catch ex As Exception
-                                    Call WriteLog(Me.Name & " : " & ex.ToString)
-                                End Try
-
+                                doShowResult()
                             End If
 
                             If MsgBoxResult.Yes = MsgBox("처리를 완료하시겠습니까?" & vbNewLine _
@@ -321,6 +353,10 @@ Public Class MainFrmCDB
     End Function
 
     Private Sub btnBackup_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnBackup.Click
+        If mTaskMode = TASKMODE.BACKED_UP Or mTaskMode = TASKMODE.DELETED Or mTaskMode = TASKMODE.UPLOADED Then
+            MsgBox("고객정보가 이미 백업되어었습니다." & vbCrLf & "초기나 업로드 최종완료후 또는 복구후에만 백업할수 있습니다.", MsgBoxStyle.OkOnly, "알림")
+            Exit Sub
+        End If
         If doBackup() Then
             MsgBox("고객정보가 백업되었습니다.", MsgBoxStyle.OkOnly, "알림")
             mTaskMode = TASKMODE.BACKED_UP
@@ -371,15 +407,19 @@ Public Class MainFrmCDB
         Try
             Dim frm As FRM_RESULT = New FRM_RESULT
 
+            frm.setSumCnt(mCntTotal, mCnt, mCntDup, mCntError, mCntWrongPhoneFormat)
             frm.ShowDialog()
             frm.Focus()
-            frm.setSumCnt(mCnt, mCntDup)
         Catch ex As Exception
             Call WriteLog(Me.Name & " : " & ex.ToString)
         End Try
     End Sub
 
     Function doExistTable(ByVal mode As TABLEMODE) As Boolean
+        Return doExistTable(mode, "")
+    End Function
+
+    Function doExistTable(ByVal mode As TABLEMODE, ByVal fieldName As String) As Boolean
         Dim tableName As String = ""
         Dim isExist As Boolean = False
         Select Case mode
@@ -397,7 +437,12 @@ Public Class MainFrmCDB
             Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.WaitCursor
 
             Dim Sql As String = ""
-            Sql = "select * from information_schema.tables where table_schema = 'wedo_db' and table_name = '" & tableName & "'"
+            If fieldName.Trim() = "" Then
+                Sql = "select * from information_schema.tables where table_schema = 'wedo_db' and table_name = '" & tableName & "'"
+            Else
+                Sql = "select * from information_schema.COLUMNS where table_schema = 'wedo_db' and table_name = '" & tableName & "'" & _
+                    " and column_name = '" & fieldName & "'"
+            End If
             Dim dt1 As DataTable = GetData_table1(gsConString, Sql)
 
             If dt1.Rows.Count > 0 Then
@@ -521,7 +566,10 @@ Public Class MainFrmCDB
         Dim nExcelCnt As Integer = 0
         Dim nOkCnt As Integer = 0
         Dim nErrCntWrongPhoneFormat As Integer = 0
+        Dim nErrCnt As Integer = 0
         Dim defCustLevel As String = "03"
+        Dim ExcelResult As UPLOADRESULT = UPLOADRESULT.SUCCESS
+
         Try
             i = filepath.LastIndexOf(".")
             If i > 0 Then ext = filepath.Substring(i + 1)
@@ -531,11 +579,13 @@ Public Class MainFrmCDB
 
             If (giCustomerImportColCount + 3) <> dt.Columns.Count Then
                 MsgBox("고객정보를 아래 양식에 맞게 수정하세요." & vbNewLine & vbNewLine _
-              & "경로: {프로그램설치경로}\sample\고객정보대장-샘플.xlsx", _
+              & "경로: {프로그램설치경로}\sample\고객정보대장-샘플.xlsx" & vbNewLine & vbNewLine _
+              & "필수필드갯수:" & (giCustomerImportColCount + 3) & " 현재파일필드갯수:" & dt.Columns.Count, _
                     MsgBoxStyle.OkOnly, "포맷오류")
                 Return
             End If
 
+            mCntTotal = dt.Rows.Count
 
             For nExcelCnt = 0 To dt.Rows.Count - 1
                 'WriteLog("i : " & i & " dt.Rows(i)(0) : " & dt.Rows(i)(0).ToString().Trim & " dt.Rows(i)(1) : " & dt.Rows(i)(1).ToString().Trim & " dt.Rows(i)(2) : " & dt.Rows(i)(2).ToString().Trim & " dt.Rows(i)(3) : " & dt.Rows(i)(3).ToString().Trim)
@@ -543,59 +593,128 @@ Public Class MainFrmCDB
                 If dt.Rows(nExcelCnt)(0).ToString().Trim = gsCheckCustomerColumnName Then
                     Continue For
                 End If
+                ExcelResult = UPLOADRESULT.SUCCESS
 
-                If dt.Rows(nExcelCnt)(0).ToString().Trim <> "" Then
+                If dt.Rows(nExcelCnt)(0).ToString().Trim = "" Then
+                    nErrCnt += 1
 
-                    If (dt.Rows(nExcelCnt)(4).ToString().Trim() = "" _
-                        And dt.Rows(nExcelCnt)(5).ToString().Trim() = "") Then
-                        nErrCntWrongPhoneFormat += 1
-
-                        Continue For
-                    End If
-
-                    If (dt.Rows(nExcelCnt)(4).ToString().Trim() <> "" _
-                        And IsHPNumber(dt.Rows(nExcelCnt)(4).ToString())) Then
-                        nErrCntWrongPhoneFormat += 1
-                        Continue For
-                    End If
-                    If (dt.Rows(nExcelCnt)(5).ToString().Trim() <> "" _
-                        And Not IsHPNumber(dt.Rows(nExcelCnt)(5).ToString())) Then
-                        nErrCntWrongPhoneFormat += 1
-                        Continue For
-                    End If
-                    If dt.Rows(nExcelCnt)(8).ToString().Trim = "" Then
-                        defCustLevel = "03"
-                    Else
-                        defCustLevel = dt.Rows(nExcelCnt)(8).ToString().Trim
-                    End If
-                    Sql = "INSERT INTO T_CUSTOMER_EXCEL_TMP(COM_CD,CUSTOMER_NM, " & _
-                                "COMPANY,DEPARTMENT,JOB_TITLE, " & _
-                                "C_TELNO,H_TELNO,FAX_NO,EMAIL,CUSTOMER_TYPE,WOO_NO, " & _
-                                "CUSTOMER_ADDR,CUSTOMER_ETC,C_TELNO1,H_TELNO1) " & _
-                                " Values('" & _
-                                gsCOM_CD & "','" & _
-                                dt.Rows(nExcelCnt)(0).ToString().Trim & "','" & _
-                                dt.Rows(nExcelCnt)(1).ToString().Trim & "','" & _
-                                dt.Rows(nExcelCnt)(2).ToString().Trim & "','" & _
-                                dt.Rows(nExcelCnt)(3).ToString().Trim & "','" & _
-                                dt.Rows(nExcelCnt)(4).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(nExcelCnt)(5).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(nExcelCnt)(6).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(nExcelCnt)(7).ToString().Trim & "','" & _
-                                defCustLevel & "','" & _
-                                dt.Rows(nExcelCnt)(9).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(nExcelCnt)(10).ToString().Trim & "','" & _
-                                dt.Rows(nExcelCnt)(11).ToString().Trim & "','" & _
-                                dt.Rows(nExcelCnt)(4).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
-                                dt.Rows(nExcelCnt)(5).ToString().Replace("-", "").Replace(" ", "").Trim & "')"
-
-                    'WriteLog(temp)
-                    dt2 = Mysql_GetData_table(gsConString, Sql)
-                    nOkCnt += 1
-                    dt2.Reset()
+                    ExcelResult = UPLOADRESULT.NO_CUSTOMER_NAME
+                    WriteLog("i : " & nExcelCnt & _
+                             "[" & dt.Rows(nExcelCnt)(0).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(1).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(2).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(3).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(4).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(5).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(6).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(7).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(8).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(9).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(10).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(11).ToString().Trim & "]" & _
+                             MsgNoCustomerName)
+                    'Continue For
                 End If
-            Next
 
+
+                If (dt.Rows(nExcelCnt)(4).ToString().Trim() = "" _
+                    And dt.Rows(nExcelCnt)(5).ToString().Trim() = "") Then
+                    nErrCntWrongPhoneFormat += 1
+
+                    ExcelResult = UPLOADRESULT.NO_HP_NO_PHONE
+                    WriteLog("i:" & nExcelCnt & _
+                             "[" & dt.Rows(nExcelCnt)(0).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(1).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(2).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(3).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(4).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(5).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(6).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(7).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(8).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(9).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(10).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(11).ToString().Trim & "]" & _
+                             MsgNoHPNoPhone)
+                    'Continue For
+                End If
+
+                If (dt.Rows(nExcelCnt)(4).ToString().Trim() <> "" _
+                    And IsHPNumber(dt.Rows(nExcelCnt)(4).ToString())) Then
+                    nErrCntWrongPhoneFormat += 1
+                    ExcelResult = UPLOADRESULT.PHONE_IS_HP
+                    WriteLog("i:" & nExcelCnt & _
+                             "[" & dt.Rows(nExcelCnt)(0).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(1).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(2).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(3).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(4).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(5).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(6).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(7).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(8).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(9).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(10).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(11).ToString().Trim & "]" & _
+                             MsgPhoneIsHP)
+                    'Continue For
+                End If
+                If (dt.Rows(nExcelCnt)(5).ToString().Trim() <> "" _
+                    And Not IsHPNumber(dt.Rows(nExcelCnt)(5).ToString())) Then
+                    nErrCntWrongPhoneFormat += 1
+
+                    ExcelResult = UPLOADRESULT.HP_NO_HP
+                    WriteLog("i:" & nExcelCnt & _
+                             "[" & dt.Rows(nExcelCnt)(0).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(1).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(2).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(3).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(4).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(5).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(6).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(7).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(8).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(9).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(10).ToString().Trim & "]" & _
+                             "[" & dt.Rows(nExcelCnt)(11).ToString().Trim & "]" & _
+                             MsgHPNoHP)
+                    'Continue For
+                End If
+                If dt.Rows(nExcelCnt)(8).ToString().Trim = "" Then
+                    defCustLevel = "03"
+                Else
+                    defCustLevel = dt.Rows(nExcelCnt)(8).ToString().Trim
+                End If
+                Sql = "INSERT INTO T_CUSTOMER_EXCEL_TMP(COM_CD,CUSTOMER_NM, " & _
+                            "COMPANY,DEPARTMENT,JOB_TITLE, " & _
+                            "C_TELNO,H_TELNO,FAX_NO,EMAIL,CUSTOMER_TYPE,WOO_NO, " & _
+                            "CUSTOMER_ADDR,CUSTOMER_ETC,C_TELNO1,H_TELNO1,UPLOAD_RESULT) " & _
+                            " Values('" & _
+                            gsCOM_CD & "','" & _
+                            dt.Rows(nExcelCnt)(0).ToString().Trim & "','" & _
+                            dt.Rows(nExcelCnt)(1).ToString().Trim & "','" & _
+                            dt.Rows(nExcelCnt)(2).ToString().Trim & "','" & _
+                            dt.Rows(nExcelCnt)(3).ToString().Trim & "','" & _
+                            dt.Rows(nExcelCnt)(4).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
+                            dt.Rows(nExcelCnt)(5).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
+                            dt.Rows(nExcelCnt)(6).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
+                            dt.Rows(nExcelCnt)(7).ToString().Trim & "','" & _
+                            defCustLevel & "','" & _
+                            dt.Rows(nExcelCnt)(9).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
+                            dt.Rows(nExcelCnt)(10).ToString().Trim & "','" & _
+                            dt.Rows(nExcelCnt)(11).ToString().Trim & "','" & _
+                            dt.Rows(nExcelCnt)(4).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
+                            dt.Rows(nExcelCnt)(5).ToString().Replace("-", "").Replace(" ", "").Trim & "','" & _
+                            ExcelResult & "')"
+                'WriteLog(temp)
+                dt2 = Mysql_GetData_table(gsConString, Sql)
+                If dt2 Is Nothing Then
+                    nErrCnt += 1
+                Else
+                    nOkCnt += 1
+                End If
+                dt2.Reset()
+            Next
 
             Sql = "select distinct a.customer_id new_customer_id " & _
                       " from t_customer_excel_tmp a,  " & _
@@ -610,8 +729,9 @@ Public Class MainFrmCDB
             mCntDup = dt1.Rows.Count
             mCnt = nOkCnt
             mCntWrongPhoneFormat = nErrCntWrongPhoneFormat
+            mCntError = nErrCnt
 
-            WriteLog("*** Target Count : " & dt.Rows.Count & " => Insert Count : OK[" & nOkCnt & "] DUP[" & dt1.Rows.Count & "] " & "Error[" & nErrCntWrongPhoneFormat & "]")
+            WriteLog("*** Target Count : " & dt.Rows.Count & " => Insert Count : OK[" & nOkCnt & "] DUP[" & dt1.Rows.Count & "] " & "Format Error[" & nErrCntWrongPhoneFormat & "]" & "Etc Error[" & nErrCnt & "]")
         Catch ex As Exception
             WriteLog(ex.ToString)
         Finally

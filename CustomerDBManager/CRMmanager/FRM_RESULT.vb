@@ -5,9 +5,12 @@ Public Class FRM_RESULT
     Private ss As New CDBMmanager
     Private result As Integer = 0
 
-    Public Sub setSumCnt(ByVal nCnt As Integer, ByVal nDup As Integer)
+    Public Sub setSumCnt(ByVal nCntTotal As Integer, ByVal nCnt As Integer, ByVal nDup As Integer, ByVal nErr As Integer, ByVal nErrFormat As Integer)
         lblCnt.Text = "정상" & nCnt & "건"
         lblDupCnt.Text = "중복" & nDup & "건"
+        lblErrCnt.Text = "오류" & nErr & "건"
+        lblErrFormatCnt.Text = "포맷오류" & nErrFormat & "건"
+
     End Sub
 
     Public Function genQuery() As String
@@ -22,7 +25,11 @@ Public Class FRM_RESULT
         '						or (a.h_telno = b.h_telno and a.h_TELNO > ''))
         '			) dup_id
         'from t_customer b
-        Dim SQL As String = " select CUSTOMER_NM,COMPANY, DEPARTMENT, JOB_TITLE"
+        Dim SQL As String = " select case when upload_result = '1' then 'Phone/HP정보없음'"
+        SQL = SQL & " 			when upload_result = '2' then 'Phone이 HP포맷'"
+        SQL = SQL & " 			when upload_result = '3' then 'HP포맷오류'"
+        SQL = SQL & " 			when upload_result = '4' then '고객명없음'"
+        SQL = SQL & " 			else '정상'end RESULT, CUSTOMER_NM,COMPANY, DEPARTMENT, JOB_TITLE"
         SQL = SQL & " 			,C_TELNO,H_TELNO "
         SQL = SQL & " 		    ,(select  max(a.customer_id) "
         SQL = SQL & " 			    from t_customer_excel_backup a "
@@ -52,41 +59,48 @@ Public Class FRM_RESULT
             DataGridView2.Columns.Clear()
 
             DataGridView2.DataSource = dt1
-            DataGridView2.Columns.Item(0).HeaderText = "고객명"
-            DataGridView2.Columns.Item(0).Width = 100
+            DataGridView2.Columns.Item(0).HeaderText = "업로드결과"
+            DataGridView2.Columns.Item(0).Width = 150
 
-            DataGridView2.Columns.Item(1).HeaderText = "회사"
-            DataGridView2.Columns.Item(1).Width = 150
+            DataGridView2.Columns.Item(1).HeaderText = "고객명"
+            DataGridView2.Columns.Item(1).Width = 100
 
-            DataGridView2.Columns.Item(2).HeaderText = "소속"
+            DataGridView2.Columns.Item(2).HeaderText = "회사"
             DataGridView2.Columns.Item(2).Width = 80
 
-            DataGridView2.Columns.Item(3).HeaderText = "직급"
+            DataGridView2.Columns.Item(3).HeaderText = "소속"
             DataGridView2.Columns.Item(3).Width = 80
 
-            DataGridView2.Columns.Item(4).HeaderText = "전화번호"
-            DataGridView2.Columns.Item(4).Width = 120
+            DataGridView2.Columns.Item(4).HeaderText = "직급"
+            DataGridView2.Columns.Item(4).Width = 80
 
-            DataGridView2.Columns.Item(5).HeaderText = "핸드폰"
-            DataGridView2.Columns.Item(5).Width = 120
+            DataGridView2.Columns.Item(5).HeaderText = "전화번호"
+            DataGridView2.Columns.Item(5).Width = 80
 
-            DataGridView2.Columns.Item(6).HeaderText = "기존고객ID"
-            DataGridView2.Columns.Item(6).Width = 120
+            DataGridView2.Columns.Item(6).HeaderText = "핸드폰"
+            DataGridView2.Columns.Item(6).Width = 80
 
-            DataGridView2.Columns.Item(7).HeaderText = "팩스"
-            DataGridView2.Columns.Item(7).Width = 100
+            DataGridView2.Columns.Item(7).HeaderText = "기존고객ID"
+            DataGridView2.Columns.Item(7).Width = 120
 
-            DataGridView2.Columns.Item(8).HeaderText = "이메일"
-            DataGridView2.Columns.Item(8).Width = 120
+            DataGridView2.Columns.Item(8).HeaderText = "팩스"
+            DataGridView2.Columns.Item(8).Width = 100
 
-            DataGridView2.Columns.Item(9).HeaderText = "고객유형"
+            DataGridView2.Columns.Item(9).HeaderText = "이메일"
             DataGridView2.Columns.Item(9).Width = 120
-            DataGridView2.Columns.Item(10).HeaderText = "우편번호"
+
+            DataGridView2.Columns.Item(10).HeaderText = "고객유형"
             DataGridView2.Columns.Item(10).Width = 120
-            DataGridView2.Columns.Item(11).HeaderText = "고객주소"
+
+            DataGridView2.Columns.Item(11).HeaderText = "우편번호"
             DataGridView2.Columns.Item(11).Width = 120
-            DataGridView2.Columns.Item(12).HeaderText = "비고"
+
+            DataGridView2.Columns.Item(12).HeaderText = "고객주소"
             DataGridView2.Columns.Item(12).Width = 120
+
+            DataGridView2.Columns.Item(13).HeaderText = "비고"
+            DataGridView2.Columns.Item(13).Width = 120
+
             dt1 = Nothing
             Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default
 
@@ -114,8 +128,11 @@ Public Class FRM_RESULT
 
     Private Sub DataGridView2_CellPainting(ByVal sender As System.Object, ByVal e As System.Windows.Forms.DataGridViewCellPaintingEventArgs) Handles DataGridView2.CellPainting
         If e.Value IsNot Nothing And e.RowIndex >= 0 Then
-            If Me.DataGridView2.Item(6, e.RowIndex).Value.ToString.Trim() <> "" Then
+            If Me.DataGridView2.Item(7, e.RowIndex).Value.ToString.Trim() <> "" Then
                 e.CellStyle.ForeColor = Color.Red
+            End If
+            If Me.DataGridView2.Item(0, e.RowIndex).Value.ToString.Trim() <> "정상" Then
+                e.CellStyle.BackColor = Color.Red
             End If
         End If
     End Sub
