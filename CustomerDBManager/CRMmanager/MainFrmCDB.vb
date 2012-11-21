@@ -61,15 +61,15 @@ Public Class MainFrmCDB
     End Sub
 
     Private Sub MainFrmCDB_FormClosing(ByVal sender As Object, ByVal e As System.Windows.Forms.FormClosingEventArgs) Handles Me.FormClosing
+        'If mTaskMode = TASKMODE.DELETED Then
+        '    If MsgBoxResult.Ok = MsgBox("고객데이터가 삭제된 상태입니다." & vbNewLine & _
+        '                                "복구하거나 고객정보를 업로드완료후 종료하세요.", MsgBoxStyle.OkOnly, "데이터 삭제 경고") Then
+        '        e.Cancel = True
+        '    End If
+        'End If
+
+
         If mTaskMode = TASKMODE.DELETED Then
-            If MsgBoxResult.Ok = MsgBox("고객데이터가 삭제된 상태입니다." & vbNewLine & _
-                                        "복구하거나 고객정보를 업로드완료후 종료하세요.", MsgBoxStyle.OkOnly, "데이터 삭제 경고") Then
-                e.Cancel = True
-            End If
-        End If
-
-
-        If mTaskMode = TASKMODE.UPLOADED Then
             If MsgBoxResult.Ok = MsgBox("고객데이터가 삭제된 후 업로드가 완료되지 않았습니다." & vbNewLine & _
                                         "복구하거나 고객정보를 업로드완료후 종료하세요.", MsgBoxStyle.OkOnly, "데이터 삭제 경고") Then
                 e.Cancel = True
@@ -102,7 +102,7 @@ Public Class MainFrmCDB
                 gbBackup.Enabled = True
                 gbDelete.Enabled = True
                 gbUpload.Enabled = True
-                gbRecovery.Enabled = False
+                gbRecovery.Enabled = True
             Case TASKMODE.UPLOADED
                 gbBackup.Enabled = True
                 gbDelete.Enabled = True
@@ -256,7 +256,7 @@ Public Class MainFrmCDB
                                 Call txUpdateCustomerTelNo()
                             Else '작업취소
                                 MsgBox("처리가 취소되었습니다.", MsgBoxStyle.OkOnly, "정보")
-                                Return True
+                                Return False
                             End If
 
                             '중복건 포함 정상건 처리
@@ -294,6 +294,7 @@ Public Class MainFrmCDB
                                 MsgBox(mCnt & "건이 처리되었습니다.", MsgBoxStyle.OkOnly, "정보")
                             Else
                                 MsgBox("처리가 취소되었습니다.", MsgBoxStyle.OkOnly, "정보")
+                                Return False
                             End If
                         End If ' If mCntDup > 0 Then
                     Else 'If mCnt > 0 Then

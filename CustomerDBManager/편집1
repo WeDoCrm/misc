@@ -174,7 +174,7 @@ select min(customer_id), max(customer_id) from t_customer;
 alter table t_customer disable keys;
 truncate table t_customer;
 insert into t_customer
-select * from t_customer_backup;
+select * from t_customer_excel_backup;
 commit;
 alter table t_customer enable keys;
 
