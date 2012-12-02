@@ -1,0 +1,548 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2063864C-68F5-4761-9688-CD5A06BA3EB7}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Elegant.Ui.Samples.ControlsSample</RootNamespace>
+    <AssemblyName>ControlsSample</AssemblyName>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Elegant.Ui.Common" />
+    <Reference Include="Elegant.Ui.Ribbon, Version=4.2.0.0, Culture=neutral, PublicKeyToken=3a2b400713aae6e0, processorArchitecture=MSIL" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ButtonsPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ButtonsPage.Designer.cs">
+      <DependentUpon>ButtonsPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CalendarPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CalendarPage.Designer.cs">
+      <DependentUpon>CalendarPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ColorPickerPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ColorPickerPage.Designer.cs">
+      <DependentUpon>ColorPickerPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ControlsSamplePageContainer.cs">
+    </Compile>
+    <Compile Include="Controls\BrushComboBox.cs">
+    </Compile>
+    <Compile Include="Controls\DateTimePickerLayoutPanel.cs">
+    </Compile>
+    <Compile Include="Controls\CustomPopupChildControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\CustomPopupChildControl.Designer.cs">
+      <DependentUpon>CustomPopupChildControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Elegant.Ui.FontComboBox.cs" />
+    <Compile Include="Controls\EventControl.cs">
+    </Compile>
+    <Compile Include="Controls\GalleryContainerPanel.cs" />
+    <Compile Include="Controls\ShapeControl.cs" />
+    <Compile Include="Controls\ShapeType.cs" />
+    <Compile Include="Controls\ShapeTypeItem.cs" />
+    <Compile Include="Elegant.Ui.Samples.AssemblyInfo.cs" />
+    <Compile Include="ListBoxPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ListBoxPage.Designer.cs">
+      <DependentUpon>ListBoxPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MessageBoxPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MessageBoxPage.Designer.cs">
+      <DependentUpon>MessageBoxPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NotifyIconPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="NotifyIconPage.Designer.cs">
+      <DependentUpon>NotifyIconPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ProgressBarPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ProgressBarPage.Designer.cs">
+      <DependentUpon>ProgressBarPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ScreenTipPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ScreenTipPage.Designer.cs">
+      <DependentUpon>ScreenTipPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SliderPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SliderPage.Designer.cs">
+      <DependentUpon>SliderPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Sockets\Constant.cs" />
+    <Compile Include="Sockets\FtpClientManager.cs" />
+    <Compile Include="Sockets\Logger.cs" />
+    <Compile Include="Sockets\MiscObjs.cs" />
+    <Compile Include="Sockets\MsgrClientManager.cs" />
+    <Compile Include="Sockets\ServerListeners.cs" />
+    <Compile Include="Sockets\ServerManager.cs" />
+    <Compile Include="Sockets\SocketClient.cs" />
+    <Compile Include="Sockets\SyncSocket.cs" />
+    <Compile Include="Sockets\TcpClientManager.cs" />
+    <Compile Include="Sockets\Utils.cs" />
+    <Compile Include="TabControlPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TabControlPage.Designer.cs">
+      <DependentUpon>TabControlPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GalleryPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GalleryPage.Designer.cs">
+      <DependentUpon>GalleryPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PopupsPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PopupsPage.Designer.cs">
+      <DependentUpon>PopupsPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SamplePageBase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="DataEntryControlsPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="DataEntryControlsPage.Designer.cs">
+      <DependentUpon>DataEntryControlsPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="ButtonsPage.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ButtonsPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="StatusBarPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="StatusBarPage.Designer.cs">
+      <DependentUpon>StatusBarPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Theme.cs" />
+    <Compile Include="MsgrServerPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MsgrServerPage.Designer.cs">
+      <DependentUpon>MsgrServerPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MsgrClientPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MsgrClientPage.Designer.cs">
+      <DependentUpon>MsgrClientPage.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DataEntryControlsPage.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>DataEntryControlsPage.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="PopupsPage.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>PopupsPage.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Controls\CustomPopupChildControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CustomPopupChildControl.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="StatusBarPage.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>StatusBarPage.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CalendarPage.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CalendarPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ColorPickerPage.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ColorPickerPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ListBoxPage.resx">
+      <DependentUpon>ListBoxPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MessageBoxPage.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MessageBoxPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NotifyIconPage.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>NotifyIconPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ProgressBarPage.resx">
+      <DependentUpon>ProgressBarPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ScreenTipPage.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ScreenTipPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SliderPage.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>SliderPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TabControlPage.resx">
+      <DependentUpon>TabControlPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GalleryPage.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>GalleryPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\AirBrushHardRound13px.png" />
+    <EmbeddedResource Include="Resources\AirBrushHardRound19px.png" />
+    <EmbeddedResource Include="Resources\AirBrushHardRound9px.png" />
+    <EmbeddedResource Include="Resources\Arrows01.png" />
+    <EmbeddedResource Include="Resources\Arrows02.png" />
+    <EmbeddedResource Include="Resources\Arrows03.png" />
+    <EmbeddedResource Include="Resources\Arrows04.png" />
+    <EmbeddedResource Include="Resources\Arrows05.png" />
+    <EmbeddedResource Include="Resources\BasicNaryOperators01.png" />
+    <EmbeddedResource Include="Resources\BasicNaryOperators02.png" />
+    <EmbeddedResource Include="Resources\BasicNaryOperators03.png" />
+    <EmbeddedResource Include="Resources\BasicNaryOperators04.png" />
+    <EmbeddedResource Include="Resources\BasicNaryOperators05.png" />
+    <EmbeddedResource Include="Resources\BasicNaryOperators06.png" />
+    <EmbeddedResource Include="Resources\BasicNaryOperators07.png" />
+    <EmbeddedResource Include="Resources\BasicNaryOperators08.png" />
+    <EmbeddedResource Include="Resources\BasicNaryOperators09.png" />
+    <EmbeddedResource Include="Resources\BasicNaryOperators10.png" />
+    <EmbeddedResource Include="Resources\BasicNaryOperators11.png" />
+    <EmbeddedResource Include="Resources\BasicNaryOperators12.png" />
+    <EmbeddedResource Include="Resources\BasicNaryOperators13.png" />
+    <EmbeddedResource Include="Resources\BrushChalk36px.png" />
+    <EmbeddedResource Include="Resources\BrushCharcoalLargeSmear36px.png" />
+    <EmbeddedResource Include="Resources\BrushDryBrush39px.png" />
+    <EmbeddedResource Include="Resources\BrushDryBrushTipLightFlow66px.png" />
+    <EmbeddedResource Include="Resources\BrushDuneGrass.png" />
+    <EmbeddedResource Include="Resources\BrushFlowingStars.png" />
+    <EmbeddedResource Include="Resources\BrushFuzzball.png" />
+    <EmbeddedResource Include="Resources\BrushGrass.png" />
+    <EmbeddedResource Include="Resources\BrushHardPastelOnCanvas33px.png" />
+    <EmbeddedResource Include="Resources\BrushHardRound13px.png" />
+    <EmbeddedResource Include="Resources\BrushHardRound19px.png" />
+    <EmbeddedResource Include="Resources\BrushHardRound1px.png" />
+    <EmbeddedResource Include="Resources\BrushHardRound3px.png" />
+    <EmbeddedResource Include="Resources\BrushHardRound5px.png" />
+    <EmbeddedResource Include="Resources\BrushHardRound9px.png" />
+    <EmbeddedResource Include="Resources\BrushOilPastelLarge63px.png" />
+    <EmbeddedResource Include="Resources\BrushScatteredLeaves.png" />
+    <EmbeddedResource Include="Resources\BrushScatteredMapleLeaves.png" />
+    <EmbeddedResource Include="Resources\BrushSoftRound13px.png" />
+    <EmbeddedResource Include="Resources\BrushSoftRound17px.png" />
+    <EmbeddedResource Include="Resources\BrushSoftRound21px.png" />
+    <EmbeddedResource Include="Resources\BrushSoftRound27px.png" />
+    <EmbeddedResource Include="Resources\BrushSoftRound5px.png" />
+    <EmbeddedResource Include="Resources\BrushSoftRound9px.png" />
+    <EmbeddedResource Include="Resources\BrushSpatter14px.png" />
+    <EmbeddedResource Include="Resources\BrushSpatter24px.png" />
+    <EmbeddedResource Include="Resources\BrushSpatter27px.png" />
+    <EmbeddedResource Include="Resources\BrushSpatter39px.png" />
+    <EmbeddedResource Include="Resources\BrushSpatter46px.png" />
+    <EmbeddedResource Include="Resources\BrushSpatter59px.png" />
+    <EmbeddedResource Include="Resources\callouts1_small.png" />
+    <EmbeddedResource Include="Resources\callouts2_small.png" />
+    <EmbeddedResource Include="Resources\callouts3_small.png" />
+    <EmbeddedResource Include="Resources\callouts4_small.png" />
+    <EmbeddedResource Include="Resources\DownArrow.png" />
+    <EmbeddedResource Include="Resources\encryptdocument_large.png" />
+    <EmbeddedResource Include="Resources\Fall1.png" />
+    <EmbeddedResource Include="Resources\Fall10.png" />
+    <EmbeddedResource Include="Resources\Fall11.png" />
+    <EmbeddedResource Include="Resources\Fall12.png" />
+    <EmbeddedResource Include="Resources\Fall2.png" />
+    <EmbeddedResource Include="Resources\Fall3.png" />
+    <EmbeddedResource Include="Resources\Fall4.png" />
+    <EmbeddedResource Include="Resources\Fall5.png" />
+    <EmbeddedResource Include="Resources\Fall6.png" />
+    <EmbeddedResource Include="Resources\Fall7.png" />
+    <EmbeddedResource Include="Resources\Fall8.png" />
+    <EmbeddedResource Include="Resources\Fall9.png" />
+    <EmbeddedResource Include="Resources\fullscreenreadingsmall.png" />
+    <EmbeddedResource Include="Resources\greenpaper.png" />
+    <EmbeddedResource Include="Resources\greenpapersmall.png" />
+    <EmbeddedResource Include="Resources\id_dv_draft_small.png" />
+    <EmbeddedResource Include="Resources\id_dv_outline_small.png" />
+    <EmbeddedResource Include="Resources\id_dv_web_layout_small.png" />
+    <EmbeddedResource Include="Resources\id_insert_bookmark_large.png" />
+    <EmbeddedResource Include="Resources\id_insert_bookmark_large_green.png" />
+    <EmbeddedResource Include="Resources\id_insert_bookmark_small.png" />
+    <EmbeddedResource Include="Resources\id_insert_bookmark_small_green.png" />
+    <EmbeddedResource Include="Resources\id_insert_chart_large.png" />
+    <EmbeddedResource Include="Resources\id_insert_chart_large_pensil.png" />
+    <EmbeddedResource Include="Resources\id_insert_chart_small.png" />
+    <EmbeddedResource Include="Resources\id_insert_chart_small_pensil.png" />
+    <EmbeddedResource Include="Resources\id_insert_cross_reference_large.png" />
+    <EmbeddedResource Include="Resources\id_insert_cross_reference_small.png" />
+    <EmbeddedResource Include="Resources\id_insert_equation_large.png" />
+    <EmbeddedResource Include="Resources\id_insert_equation_small.png" />
+    <EmbeddedResource Include="Resources\id_insert_picture_from_file_large.png" />
+    <EmbeddedResource Include="Resources\id_insert_picture_from_file_small.png" />
+    <EmbeddedResource Include="Resources\id_insert_quick_parts_large.png" />
+    <EmbeddedResource Include="Resources\id_insert_quick_parts_large_color.png" />
+    <EmbeddedResource Include="Resources\id_insert_quick_parts_small.png" />
+    <EmbeddedResource Include="Resources\id_insert_quick_parts_small_color.png" />
+    <EmbeddedResource Include="Resources\id_insert_shapes_large.png" />
+    <EmbeddedResource Include="Resources\insertcitation_large.png" />
+    <EmbeddedResource Include="Resources\insert_clipart_large.png" />
+    <EmbeddedResource Include="Resources\inspectdocument_large.png" />
+    <EmbeddedResource Include="Resources\LeftArrow.png" />
+    <EmbeddedResource Include="Resources\LeftRightArrow.png" />
+    <EmbeddedResource Include="Resources\LeftSubscriptSuperscript_Large.png" />
+    <EmbeddedResource Include="Resources\markasfinal_large.png" />
+    <EmbeddedResource Include="Resources\markentry_large.png" />
+    <EmbeddedResource Include="Resources\picturetoolsquickstyles_large.png" />
+    <EmbeddedResource Include="Resources\printlayoutsmall.png" />
+    <EmbeddedResource Include="Resources\recordmacro.png" />
+    <EmbeddedResource Include="Resources\redpaper.png" />
+    <EmbeddedResource Include="Resources\redpapersmall.png" />
+    <EmbeddedResource Include="Resources\reject_small.png" />
+    <EmbeddedResource Include="Resources\research_small.png" />
+    <EmbeddedResource Include="Resources\resetpicture_small.png" />
+    <EmbeddedResource Include="Resources\reviewingpanevertical_small.png" />
+    <EmbeddedResource Include="Resources\reviewingpane_small.png" />
+    <EmbeddedResource Include="Resources\RightArrow.png" />
+    <EmbeddedResource Include="Resources\rotateleft_small.png" />
+    <EmbeddedResource Include="Resources\setlanguage_small.png" />
+    <EmbeddedResource Include="Resources\Spring1.png" />
+    <EmbeddedResource Include="Resources\Spring2.png" />
+    <EmbeddedResource Include="Resources\Spring3.png" />
+    <EmbeddedResource Include="Resources\Spring4.png" />
+    <EmbeddedResource Include="Resources\Spring5.png" />
+    <EmbeddedResource Include="Resources\Spring6.png" />
+    <EmbeddedResource Include="Resources\Spring7.png" />
+    <EmbeddedResource Include="Resources\Spring8.png" />
+    <EmbeddedResource Include="Resources\SubscriptSuperscript_Large.png" />
+    <EmbeddedResource Include="Resources\Subscript_Large.png" />
+    <EmbeddedResource Include="Resources\Summer1.png" />
+    <EmbeddedResource Include="Resources\Summer2.png" />
+    <EmbeddedResource Include="Resources\Summer3.png" />
+    <EmbeddedResource Include="Resources\Summer4.png" />
+    <EmbeddedResource Include="Resources\Summer5.png" />
+    <EmbeddedResource Include="Resources\Summer6.png" />
+    <EmbeddedResource Include="Resources\Summer7.png" />
+    <EmbeddedResource Include="Resources\Summer8.png" />
+    <EmbeddedResource Include="Resources\Superscript_Large.png" />
+    <EmbeddedResource Include="Resources\themes_small.png" />
+    <EmbeddedResource Include="Resources\tight_small.png" />
+    <EmbeddedResource Include="Resources\translationscreentip_small.png" />
+    <EmbeddedResource Include="Resources\UpArrow.png" />
+    <EmbeddedResource Include="Resources\Winter1.png" />
+    <EmbeddedResource Include="Resources\Winter10.png" />
+    <EmbeddedResource Include="Resources\Winter2.png" />
+    <EmbeddedResource Include="Resources\Winter3.png" />
+    <EmbeddedResource Include="Resources\Winter4.png" />
+    <EmbeddedResource Include="Resources\Winter5.png" />
+    <EmbeddedResource Include="Resources\Winter6.png" />
+    <EmbeddedResource Include="Resources\Winter7.png" />
+    <EmbeddedResource Include="Resources\Winter8.png" />
+    <EmbeddedResource Include="Resources\Winter9.png" />
+    <EmbeddedResource Include="Resources\wordoptions_small.png" />
+    <EmbeddedResource Include="MsgrServerPage.resx">
+      <DependentUpon>MsgrServerPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MsgrClientPage.resx">
+      <DependentUpon>MsgrClientPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\office-2007-silver-32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\office-2010-blue-32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\office-2007-black-32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\office-2007-blue-32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\system-32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\thermometer.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\temperatureIndicator.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Italic.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\NormalText_Small.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ID_PARAGRAPH_SORT.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Symbols_Small.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\WordCount_Small.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\sigma.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\circleTemperatureIndicator.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Phone.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\TextBoxImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\system7-32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Blue32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Silver32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Black32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\MenyPlasementArea3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Sun.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BorderColorPickerImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BackgroundColorPickerImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\BlueCircle_27x27.png" />
+    <Content Include="Resources\ElegantIcon.ico" />
+    <Content Include="Resources\ElegantUI_01.ico" />
+    <Content Include="Resources\ElegantUI_02.ico" />
+    <Content Include="Resources\ElegantUI_03.ico" />
+    <Content Include="Resources\ElegantUI_04.ico" />
+    <Content Include="Resources\ElegantUI_05.ico" />
+    <Content Include="Resources\ElegantUI_06.ico" />
+    <Content Include="Resources\ElegantUI_07.ico" />
+    <Content Include="Resources\ElegantUI_08.ico" />
+    <Content Include="Resources\ElegantUI_09.ico" />
+    <Content Include="Resources\ElegantUI_10.ico" />
+    <Content Include="Resources\ElegantUI_11.ico" />
+    <Content Include="Resources\ElegantUI_12.ico" />
+    <Content Include="Resources\ElegantUI_13.ico" />
+    <Content Include="Resources\ElegantUI_14.ico" />
+    <Content Include="Resources\ElegantUI_15.ico" />
+    <Content Include="Resources\ElegantUI_16.ico" />
+    <Content Include="Resources\ElegantUI_17.ico" />
+    <Content Include="Resources\ElegantUI_18.ico" />
+    <Content Include="Resources\ElegantUI_19.ico" />
+    <Content Include="Resources\GreenCircle_27x27.png" />
+    <Content Include="Resources\OrangeCircle_27x27.png" />
+    <Content Include="Resources\PurpleCircle_27x27.png" />
+    <Content Include="Resources\RedCircle_27x27.png" />
+    <None Include="Resources\TabControlCustomToolbarPlus.png" />
+    <None Include="Resources\TabControlCustomToolbarFolder.png" />
+    <Content Include="Resources\TanCircle_27x27.png" />
+    <Content Include="Resources\YellowCircle_27x27.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
