@@ -25,7 +25,7 @@ namespace Elegant.Ui.Samples.ControlsSample
         public MsgrServerPage()
         {
             InitializeComponent();
-            GroupBoxFileTransferStatus.Visible = false;
+            //GroupBoxFileTransferStatus.Visible = false;
             _openDirectoryDialog = new FolderBrowserDialog();
             MainForm.SetMonospaceFont(TextBoxSocketStatus);
         }
@@ -74,7 +74,8 @@ namespace Elegant.Ui.Samples.ControlsSample
             }
             else
             {
-                this.ProgressBarFileReceiving.Value = (int)(100 * (e.Status.rcvFileSize / e.Status.FileSize));
+                this.ProgressBarFileReceiving.Value = (int)(100 * e.Status.fileSizeDone / e.Status.FileSize);
+                Logger.info("ProgressBarFileReceiving.Value=" + ProgressBarFileReceiving.Value);
             }
         }
         private void ProgressBarFileBegin(object sender, SocStatusEventArgs e)
@@ -87,6 +88,7 @@ namespace Elegant.Ui.Samples.ControlsSample
             else
             {
                 this.ProgressBarFileReceiving.Visible = true;
+                Logger.info("ProgressBarFileReceiving.Visible=" + ProgressBarFileReceiving.Visible);
             }
         }
         private void ProgressBarFileEnd(object sender, SocStatusEventArgs e)
@@ -99,6 +101,7 @@ namespace Elegant.Ui.Samples.ControlsSample
             else
             {
                 this.ProgressBarFileReceiving.Visible = false;
+                Logger.info("ProgressBarFileReceiving.Visible=" + ProgressBarFileReceiving.Visible);
             }
 
         }
@@ -115,12 +118,12 @@ namespace Elegant.Ui.Samples.ControlsSample
                 if (e.Status.exception != null)
                 {
                     if (e.Status.exception is SocketException)
-                        RichTextBoxLog.AppendText(string.Format(">Received Socket Error: {0} : {1}",
+                        RichTextBoxLog.AppendText(string.Format(">Error: {0} : {1}",
                             ((SocketException)e.Status.exception).ErrorCode,
                             ((SocketException)e.Status.exception).Message) + "\n");
                     else
                     {
-                        this.RichTextBoxLog.AppendText(string.Format(">Received Socket Error: {0}", e.Status.exception.Message) + "\n");
+                        this.RichTextBoxLog.AppendText(string.Format(">Error: {0}", e.Status.exception.Message) + "\n");
                     }
                 }
                 this.RichTextBoxLog.ScrollToCaret();
@@ -277,6 +280,11 @@ namespace Elegant.Ui.Samples.ControlsSample
                 }
             }
 
+        }
+
+        private void ComboBoxLogLevel_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Logger.setLogLevel((LOGLEVEL)ComboBoxLogLevel.SelectedIndex);
         }
 
     }

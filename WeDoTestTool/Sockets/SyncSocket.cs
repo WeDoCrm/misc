@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace Elegant.Ui.Samples.ControlsSample.Sockets
 {
-    public class SynchronousSocketListener
+    public class SyncSocListener
     {
         protected Socket mServerSoc;
 
@@ -19,16 +19,25 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         protected Object mClientTableLock = new Object();
         protected Object mServerLock = new Object();
         protected StateObject mServerStateObj;
-
-        protected byte[] bufferTxt = new byte[SocConst.MAX_STR_BUFFER_SIZE];
-        protected byte[] bufferBin = new byte[SocConst.MAX_BUFFER_SIZE];
+        protected string mKey;
+        protected byte[] bufferTxtRcv = new byte[SocConst.MAX_STR_BUFFER_SIZE];
+        protected byte[] bufferBinRcv = new byte[SocConst.TEMP_BUFFER_SIZE];
+        protected byte[] bufferTxtStateObj = new byte[SocConst.MAX_STR_BUFFER_SIZE];
+        protected byte[] bufferBinStateObj = new byte[SocConst.MAX_BUFFER_SIZE];
 
         protected bool IsText = true;
         protected int mClientSize = 20;
+        protected int mWaitCount = 0;
+        protected int mWaitTimeOut = 0;//milsec
 
-        public SynchronousSocketListener(int port)
+        public SyncSocListener(int port)
         {
             mPort = port;
+        }
+
+        public void SetKey(string key)
+        {
+            mKey = key;
         }
 
         public void SetText()
@@ -61,14 +70,16 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                 mServerSoc.Bind(localEndPoint);
                 mServerSoc.Listen(10);
                 mServerStateObj = new StateObject(mServerSoc, "");
+                mServerStateObj.key = mKey;
                 mServerStateObj.status = SocHandlerStatus.LISTENING;
 
                 if (mPort == 0)
                     mPort = ((IPEndPoint)mServerSoc.LocalEndPoint).Port;
 
-                Logger.info("[SyncSoc:StartListening] Start Listening.");
+                Logger.info(string.Format("Start Listening. port[{0}]", mPort));
 
                 mHtClientTable = new Hashtable();
+                int waitCount = 0;
 
                 // Start listening for connections.
                 while (true)
@@ -77,7 +88,13 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                     {
                         if (mHtClientTable.Count >= mClientSize)
                         {
-                            Logger.info(string.Format("[SyncSoc:StartListening] Wait...over max count {0} >= {1}", mHtClientTable.Count, mClientSize));
+                            if (mWaitCount > 0) //0인경우 무한반복허용
+                                waitCount++;
+                            if (mWaitCount > 0 && waitCount >= mWaitCount)
+                                throw new Exception(string.Format("Wait 횟수 {0}회 초과.", waitCount));
+
+                            mServerStateObj.socMessage = string.Format("Wait 허용접속자수 초과 {0} >= {1}", mHtClientTable.Count, mClientSize);
+                            Logger.debug(mServerStateObj);
                             System.Threading.Thread.Sleep(SocConst.WAIT_MIL_SEC);
                             continue;
                         }
@@ -93,21 +110,28 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                     }
 
                     // Program is suspended while waiting for an incoming connection.
-                    mServerStateObj.socMessage = string.Format("[SyncSoc:StartListening] Port[{0}] Waiting for a connection...", mPort);
-                    Logger.info(mServerStateObj.socMessage);
-                    OnSocStatusChanged(new SocStatusEventArgs(mServerStateObj));
+                    mServerStateObj.socMessage = string.Format("Port[{0}] 접속대기...", mPort);
+                    Logger.info(mServerStateObj);
+                    OnSocStatusChangedOnInfo(new SocStatusEventArgs(mServerStateObj));
                     Socket soc = mServerSoc.Accept();
-                    //soc.SetSocketOption(SocketOptionLevel.Socket,
-                    //            SocketOptionName.ReceiveTimeout, 2000);
-
-                    StateObject stateObj = new StateObject(soc, "");
-                    stateObj.status = SocHandlerStatus.CONNECTED;
-                    stateObj.socMessage = string.Format("[SyncSoc:StartListening] Accepted:{0}", soc.RemoteEndPoint.ToString());
-                    Logger.info(stateObj.socMessage);
-                    OnSocStatusChanged(new SocStatusEventArgs(stateObj));
+                    //WaitTimeOut 0 이상 설정한 경우 적용
+                    if (mWaitTimeOut > 0)
+                    {
+                        //soc.SetSocketOption(SocketOptionLevel.Socket,
+                        //            SocketOptionName.ReceiveTimeout, mWaitTimeOut);
+                        soc.ReceiveTimeout = mWaitTimeOut;
+                        soc.SendTimeout = mWaitTimeOut;
+                    }
 
                     lock (mClientTableLock)
                     {
+                        StateObject stateObj = new StateObject(soc, "");
+                        stateObj.key = mKey + "_CLI" + mHtClientTable.Count;
+                        stateObj.status = SocHandlerStatus.CONNECTED;
+                        stateObj.socMessage = string.Format("Soc Accepted:{0}", soc.RemoteEndPoint.ToString());
+                        Logger.info(stateObj);
+                        OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
+
                         mHtClientTable.Add(soc.RemoteEndPoint.ToString(), soc);
                     }
                     Thread thClient = new Thread(new ParameterizedThreadStart(this.ReceiveMsg));
@@ -122,12 +146,12 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                     Logger.info("Socket errorCode[{0}]", e.ErrorCode);
                 }
                 else {
-                    setErrorMessage(e, "[SyncSoc:StartListening] Server Listening Error:" + e.ToString());
+                    setErrorMessage(e, "Server Listening Error:" + e.ToString());
                 }
             }
             catch (Exception e)
             {
-                setErrorMessage(e, "[SyncSoc:StartListening] Server Listening Error:" + e.ToString());
+                setErrorMessage(e, "Server Listening Error:" + e.ToString());
             }
 
 
@@ -138,9 +162,9 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             lock (mServerLock)
             {
                 mServerStateObj.status = SocHandlerStatus.STOP;
-                mServerStateObj.socMessage = "[SyncSoc:StopListening] Server Socket Stopped.";
-                Logger.info(mServerStateObj.socMessage);
-                OnSocStatusChanged(new SocStatusEventArgs(mServerStateObj));
+                mServerStateObj.socMessage = "Server Listening Stopped.";
+                Logger.info(mServerStateObj);
+                OnSocStatusChangedOnInfo(new SocStatusEventArgs(mServerStateObj));
                 mServerSoc.Close();
             }
         }
@@ -154,9 +178,9 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                 foreach (DictionaryEntry entry in mHtClientTable)
                 {
                     StateObject stateObj = new StateObject(null, String.Format("{0}, {1}", entry.Key, entry.Value));
-                    stateObj.socMessage = string.Format("[SyncSoc:listClient] {0}, {1}", entry.Key, entry.Value);
-                    Logger.info(stateObj.socMessage);
-                    OnSocStatusChanged(new SocStatusEventArgs(stateObj));
+                    stateObj.socMessage = string.Format("{0}, {1}", entry.Key, entry.Value);
+                    Logger.info(stateObj);
+                    OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
                 }
             }
         }
@@ -189,11 +213,14 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                 OnSocStatusChanged(e);
         }
 
-        public void ReceiveMsg(object client)
+        public virtual void ReceiveMsg(object client)
         {
             Socket clientSoc = (Socket)client;
             StateObject stateObj = new StateObject(clientSoc);
-
+            lock (mClientTableLock)
+            {
+                stateObj.key = mKey + "_CLI" + mHtClientTable.Count;
+            }
             try
             {
                 // An incoming connection needs to be processed.
@@ -204,65 +231,103 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                     stateObj.data = "";
                     stateObj.socMessage = "";
                     byte[] buffer;
-                    if (IsText)
+                    if (IsText) //일반메시지
                     {
-                        Array.Clear(this.bufferTxt, 0, this.bufferTxt.Length);
-                        buffer = bufferTxt;
+                        Array.Clear(this.bufferTxtRcv, 0, this.bufferTxtRcv.Length);
+                        buffer = bufferTxtRcv;
+                        Array.Clear(this.bufferTxtStateObj, 0, this.bufferTxtStateObj.Length);
+                        stateObj.buffer = bufferTxtStateObj;
                     }
-                    else
+                    else //파일수신
                     {
-                        Array.Clear(this.bufferBin, 0, this.bufferBin.Length);
-                        buffer = bufferBin;
+                        Array.Clear(this.bufferBinRcv, 0, this.bufferBinRcv.Length);
+                        buffer = bufferBinRcv;
+                        Array.Clear(this.bufferBinStateObj, 0, this.bufferBinStateObj.Length);
+                        stateObj.buffer = bufferBinStateObj;
                     }
-                    stateObj.buffer = buffer;
 
+                    //
                     if (!IsSocketReadyToReceive(stateObj))
                     {
-                        Logger.info("[SyncSoc:ReceiveMsg] Soc Disconnected or Error.");
+                        stateObj.socMessage = "소켓수신상태 Disconnected or Error.";
+                        Logger.info(stateObj);
                         return;
                     }
+
+                    int receivingByteInfo = 0;
                     //단일 메시지 수신
                     while (true)
                     {
                         stateObj.status = SocHandlerStatus.RECEIVING;
-                        stateObj.socMessage = "[SyncSoc:ReceiveMsg] Client Soc Wait to Receive.";
-                        Logger.debug(stateObj.socMessage);
-                        OnSocStatusChanged(new SocStatusEventArgs(stateObj));
-
+                        if (IsText)
+                        {
+                            stateObj.socMessage = "메시지 수신대기";
+                            Logger.debug(stateObj);
+                            OnSocStatusChangedOnDebug(new SocStatusEventArgs(stateObj));
+                        }
                         recv = clientSoc.Receive(buffer);
 
                         if (IsText)
                         {
                             stateObj.data += Encoding.UTF8.GetString(buffer, 0, recv);
-                            stateObj.socMessage = string.Format("[SyncSoc:ReceiveMsg] Receive Msg[{0}].", Encoding.UTF8.GetString(buffer, 0, recv));
+                            stateObj.socMessage = string.Format("일반메시지수신 Msg[{0}].", Encoding.UTF8.GetString(buffer, 0, recv));
+                            stateObj.bufferSize += recv;
+                            Logger.debug(stateObj);
+                            OnSocStatusChangedOnDebug(new SocStatusEventArgs(stateObj));
                         }
                         else
                         {
-                            Buffer.BlockCopy(buffer, 0, stateObj.buffer, stateObj.bufferSize, recv);
-                            stateObj.socMessage = string.Format("[SyncSoc:ReceiveMsg] Receive Msg[{0}].", recv);
-                        }
-                        stateObj.bufferSize += recv;
-                        Logger.debug(stateObj.socMessage);
-                        OnSocStatusChanged(new SocStatusEventArgs(stateObj));
+                            if (receivingByteInfo == 0)
+                            {
+                                receivingByteInfo = Utils.ConvertByteArrayToFileSize(buffer);
+                                if (receivingByteInfo != 0)
+                                {
+                                    recv = recv - SocConst.PREFIX_BYTE_INFO_LENGTH;
+                                    Buffer.BlockCopy(buffer, SocConst.PREFIX_BYTE_INFO_LENGTH, stateObj.buffer, stateObj.bufferSize, recv);
+                                }
+                                else
+                                {// error or abnormal stop , cancel
+                                    Buffer.BlockCopy(buffer, 0, stateObj.buffer, stateObj.bufferSize, recv);
+                                    stateObj.data += Encoding.UTF8.GetString(buffer, 0, recv);
+                                }
+                                stateObj.socMessage = string.Format("파일수신바이트[{0}].", recv);
+                            }
+                            else
+                            {
+                                Buffer.BlockCopy(buffer, 0, stateObj.buffer, stateObj.bufferSize, recv);
+                                stateObj.socMessage = string.Format("파일수신바이트[{0}].", recv);
+                            }
+                            stateObj.bufferSize += recv;
+                            //Logger.debug(stateObj.socMessage);
+                            //OnSocStatusChanged(new SocStatusEventArgs(stateObj));
 
-                        if (clientSoc.Available == 0)
+                        }
+
+                        if ((receivingByteInfo == 0 && clientSoc.Available == 0 ) 
+                            || (receivingByteInfo > 0 && receivingByteInfo == stateObj.bufferSize))
                         {
-                            Logger.debug("[SyncSoc:ReceiveMsg] 수신 메시지 Avaliable {0} break", clientSoc.Available);
+                            receivingByteInfo = 0;
+                            stateObj.socMessage = "메시지수신완료";
+                            Logger.debug(stateObj);
                             break;
                         }
                     }
 
-                    stateObj.socMessage = string.Format("[SyncSoc:ReceiveMsg] Received Size[{0}]", stateObj.bufferSize);
-                    Logger.debug(stateObj.socMessage);
-                    OnSocStatusChanged(new SocStatusEventArgs(stateObj));
+                    stateObj.socMessage = string.Format("메시지수신 완료바이트Size[{0}]", stateObj.bufferSize);
+                    Logger.debug(stateObj);
+                    OnSocStatusChangedOnDebug(new SocStatusEventArgs(stateObj));
 
                     this.ProcessMsg(stateObj);
                 }
+            } catch (WeDoFTPCancelException wde) {
+                CloseClient(clientSoc);
+                StopListening();
+                setErrorMessage(wde, stateObj);
             }
             catch (Exception e)
             {
                 CloseClient(clientSoc);
-                setErrorMessage(e, "[SyncSoc:ReceiveMsg] " + e.ToString());
+                setErrorMessage(e, "수신에러:" + e.ToString());
             }
         }
 
@@ -314,43 +379,46 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             int retry = 0;
             int recv = 0;
             StateObject stateObj = new StateObject(soc);
-
+            lock (mClientTableLock)
+            {
+                stateObj.key = mKey + "_CLI" + mHtClientTable.Count;
+            }
             while (true)
             {
                 try
                 {
                     stateObj.data = Encoding.UTF8.GetString(buffer, 0, buffer.Length);
                     stateObj.status = SocHandlerStatus.SENDING;
-                    stateObj.socMessage = string.Format("[SyncSoc:Send] Send {0} Msg[{1}]", soc.RemoteEndPoint.ToString(), stateObj.data);
+                    stateObj.socMessage = string.Format("메시지전송 {0} Msg[{1}]", soc.RemoteEndPoint.ToString(), stateObj.data);
 
                     recv = soc.Send(buffer, SocketFlags.None);
-                    Logger.debug(stateObj.socMessage);
-                    OnSocStatusChanged(new SocStatusEventArgs(stateObj));
+                    Logger.debug(stateObj);
+                    OnSocStatusChangedOnDebug(new SocStatusEventArgs(stateObj));
                     if (recv == buffer.Length) break;
                 }
                 catch (ArgumentNullException ane)
                 {
-                    stateObj.socMessage = string.Format("[SyncSoc:Send] ArgumentNullException : {0}", ane.ToString());
+                    stateObj.socMessage = string.Format("메시지전송에러:{0}", ane.ToString());
                     setErrorMessage(ane, stateObj);
                     return SocCode.SOC_ERR_CODE;
                 }
                 catch (SocketException se)
                 {
-                    stateObj.socMessage = string.Format("[SyncSoc:Send] SocketException : {0}", se.ToString());
+                    stateObj.socMessage = string.Format("메시지전송에러:{0}", se.ToString());
                     setErrorMessage(se, stateObj);
                     return SocCode.SOC_ERR_CODE;
                 }
                 catch (Exception e)
                 {
-                    stateObj.socMessage = string.Format("[SyncSoc:Send] Unexpected exception : {0}", e.ToString());
+                    stateObj.socMessage = string.Format("메시지전송에러:{0}", e.ToString());
                     setErrorMessage(e, stateObj);
                     return SocCode.SOC_ERR_CODE;
                 }
 
                 if (retry >= 3)
                 {
-                    stateObj.socErrorMessage = String.Format("[SyncSoc:Send] SendMsg Error :retry >= 3 " + Encoding.UTF8.GetString(buffer, 0, recv));
-                    setErrorMessage(new Exception("[SyncSoc:Send] SendMsg Error :retry >= 3"), stateObj);
+                    stateObj.socMessage = String.Format("메시지전송에러:retry >= 3 " + Encoding.UTF8.GetString(buffer, 0, recv));
+                    setErrorMessage(new Exception("메시지전송에러:retry >= 3"), stateObj);
                     return SocCode.SOC_ERR_CODE;
                 }
                 retry++;
@@ -374,10 +442,14 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             catch (Exception e) { }
 
             StateObject stateObj = new StateObject(clientSoc);
+            lock (mClientTableLock)
+            {
+                stateObj.key = mKey + "_Cli" + mHtClientTable.Count;
+            }
             stateObj.status = SocHandlerStatus.DISCONNECTED;
-            stateObj.socMessage = String.Format("[SyncSoc:CloseClient] {0} socket is removed from Socket list: ", socId);
-            Logger.info(stateObj.socMessage);
-            OnSocStatusChanged(new SocStatusEventArgs(stateObj));
+            stateObj.socMessage = String.Format("{0} socket is removed from Socket list: ", socId);
+            Logger.debug(stateObj);
+            OnSocStatusChangedOnDebug(new SocStatusEventArgs(stateObj));
 
             try
             {
@@ -386,7 +458,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             }
             catch (Exception e)
             {
-                setErrorMessage(e, string.Format("[SyncSoc:CloseClient] Unexpected exception : {0}", e.ToString()));
+                setErrorMessage(e, string.Format("소켓접속해제:{0}", e.ToString()));
             }
         }
 
@@ -399,8 +471,8 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         {
             obj.socErrorMessage = e.Message;
             obj.status = SocHandlerStatus.ERROR;
-            Logger.error(obj.socMessage);
-            OnSocStatusChanged(new SocStatusEventArgs(obj));
+            Logger.error(obj);
+            OnSocStatusChangedOnError(new SocStatusEventArgs(obj));
         }
 
         public void setErrorMessage(Exception e, string errMsg)

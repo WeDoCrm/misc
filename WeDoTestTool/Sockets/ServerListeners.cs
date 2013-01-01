@@ -10,12 +10,14 @@ using System.Net.Sockets;
 
 namespace Elegant.Ui.Samples.ControlsSample.Sockets
 {
-    public class TcpSocketListener : SynchronousSocketListener
+    public class TcpSocketListener : SyncSocListener
     {
         Hashtable mHtFtpListenerTable = new Hashtable();
         Object mFtpListenerTableLock = new Object();
         int mFtpPort = 0;
         string mFtpFilePath = "";
+
+        string mFtpKey = "FTP_SVR";
 
         public TcpSocketListener(int port)
             : base(port)
@@ -38,12 +40,13 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         {
             base.ProcessMsg(socObj);
 
-            Logger.debug("[TcpSocket:ProcessMsg]");
+            Logger.debug("TCP ProcessMsg Start");
             StateObject stateObj = (StateObject)socObj;
 
             switch (stateObj.msgStatus)
             {
                 case MSGStatus.NONE:
+                    //파일 정보 수신 -> FTP기동/
                     if (stateObj.Cmd == MsgDef.MSG_SEND_FILE)
                     {
                         /**
@@ -72,46 +75,44 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                             stateObj.msgStatus = MSGStatus.SENT_READY_NACK;
                         }
 
-                        stateObj.socMessage = string.Format("[TcpSocket:ProcessMsg] FTP Ready for file[{0}:{1}] Msg[{2}]",
+                        stateObj.socMessage = string.Format("FTP 수신준비상태 file[{0}:{1}]:MSG_SEND_FILE/Msg[{2}]",
                             stateObj.FileName, stateObj.FileSize, stateObj.data);
                         stateObj.status = SocHandlerStatus.RECEIVING;
 
-                        OnSocStatusChanged(new SocStatusEventArgs(stateObj));
-                        Logger.info(stateObj.socMessage);
+                        OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
+                        Logger.info(stateObj);
 
                         if (SendMsg(stateObj) == SocCode.SOC_ERR_CODE)
                         {
                             stateObj.msgStatus = MSGStatus.ERROR;
-                            throw new Exception(string.Format("[TcpSocket:ProcessMsg] SendMsg Error in MSG_SEND_FILE : Msg[{0}]", stateObj.data));
+                            throw new Exception(string.Format("FTP 수신준비상태 전송에러:MSG_SEND_FILE/Msg[{0}]", stateObj.data));
                         }
                     }
                     else if (stateObj.Cmd == MsgDef.MSG_TEXT)
                     {
-                        stateObj.socMessage = string.Format("[TcpSocket:ProcessMsg] Received Msg: {0}",
-                            stateObj.data);
+                        stateObj.socMessage = string.Format("일반메시지 수신[{0}]", stateObj.data);
                         stateObj.status = SocHandlerStatus.RECEIVING;
-
-                        OnSocStatusChanged(new SocStatusEventArgs(stateObj));
-                        Logger.info(stateObj.socMessage);
-
+                        Logger.info(stateObj);
+                        OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
+                        
                         if (SendMsg(stateObj) == SocCode.SOC_ERR_CODE)
                         {
                             stateObj.msgStatus = MSGStatus.ERROR;
-                            throw new Exception(string.Format("[TcpSocket:ProcessMsg] SendMsg Error in MSG_TEXT : Msg[{0}]", stateObj.data));
+                            throw new Exception(string.Format("일반메시지 전송에러:MSG_TEXT/Msg[{0}]", stateObj.data));
                         }
                     }
+                        //전송완료 메시지 수신 -> 
                     else if (stateObj.Cmd == MsgDef.MSG_BYE)
                     {
-                        stateObj.socMessage = string.Format("[TcpSocket:ProcessMsg] Received Msg: {0}",
-                            stateObj.data);
+                        stateObj.socMessage = string.Format("종료 메시지 수신:MSG_BYE/Msg[{0}]", stateObj.data);
                         stateObj.status = SocHandlerStatus.DISCONNECTED;
 
-                        OnSocStatusChanged(new SocStatusEventArgs(stateObj));
-                        Logger.info(stateObj.socMessage);
+                        OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
+                        Logger.info(stateObj);
                         if (SendMsg(stateObj) == SocCode.SOC_ERR_CODE)
                         {
                             stateObj.msgStatus = MSGStatus.ERROR;
-                            throw new Exception(string.Format("[TcpSocket:ProcessMsg] SendMsg Error in MSG_BYE : Msg[{0}]", stateObj.data));
+                            throw new Exception(string.Format("종료 메시지 전송에러:MSG_BYE/Msg[{0}]", stateObj.data));
                         }
 
                         CloseClient(stateObj.soc);
@@ -119,7 +120,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                     else
                     {
                         stateObj.msgStatus = MSGStatus.NONE;
-                        throw new Exception(string.Format("[TcpSocket:ProcessMsg] Unknown Msg[{0}] in MSGStatus.NONE", stateObj.data));
+                        throw new Exception(string.Format("Unknown Msg[{0}]:MSGStatus.NONE", stateObj.data));
                     }
                     break;
                 case MSGStatus.SENT_SVR_INFO:
@@ -129,21 +130,19 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                      */
                     if (stateObj.Cmd == MsgDef.MSG_COMPLETE)
                     {
-                        break;
-                        stateObj.socMessage = string.Format("[TcpSocket:ProcessMsg] Received Msg: {0}",
+                        stateObj.socMessage = string.Format("파일수신완료:SENT_SVR_INFO/Msg[{0}]",
                             stateObj.data);
-                        OnSocStatusChanged(new SocStatusEventArgs(stateObj));
+                        OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
 
                         stateObj.data = MsgDef.MSG_BYE;
-                        Logger.info(stateObj.socMessage);
+                        Logger.info(stateObj);
 
                         if (SendMsg(stateObj) == SocCode.SOC_ERR_CODE)
                         {
                             stateObj.msgStatus = MSGStatus.NONE;
-                            throw new Exception(string.Format("[TcpSocket:ProcessMsg] SendMsg Error in MSG_COMPLETE : Msg[{0}]", stateObj.data));
+                            throw new Exception(string.Format("파일수신종료 전송에러:MSG_COMPLETE/Msg[{0}]", stateObj.data));
                         }
-                        stateObj.socMessage = string.Format("[TcpSocket:ProcessMsg] Sent Msg: {0}",
-                            stateObj.data);
+                        stateObj.socMessage = string.Format("파일수신종료 전송:MSG_COMPLETE/Msg[{0}]", stateObj.data);
                         stateObj.msgStatus = MSGStatus.NONE;
                         OnSocStatusChangedOnDebug(new SocStatusEventArgs(stateObj));
                         FTP_stop(stateObj.ftpPort);
@@ -151,21 +150,20 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                     else
                     {
                         stateObj.msgStatus = MSGStatus.NONE;
-                        throw new Exception(string.Format("[TcpSocket:ProcessMsg] Unknown Msg[{0}] in MSGStatus.SENT_SVR_INFO", stateObj.data));
+                        throw new Exception(string.Format("Unknown Msg[{0}]:MSGStatus.SENT_SVR_INFO", stateObj.data));
                     }
                     break;
             }
-            Logger.debug("[TcpSocket:ProcessMsg]");
-            //Thread msgThread = new Thread(new ParameterizedThreadStart(this.SendMsg));
-            //msgThread.Start(socObj);
+            stateObj.socMessage = "TCP ProcessMsg End";
+            Logger.debug(stateObj);
         }
 
         public void SetSaveFilePath(string path)
         {
             mFtpFilePath = path;
-            mServerStateObj.socMessage = string.Format("[TcpSocket:SetSaveFilePath] Save Path to:[{0}].",mFtpFilePath);
-            Logger.info(mServerStateObj.socMessage);
-            OnSocStatusChanged(new SocStatusEventArgs(mServerStateObj));
+            mServerStateObj.socMessage = string.Format("Save Path to [{0}].",mFtpFilePath);
+            Logger.debug(mServerStateObj);
+            OnSocStatusChangedOnDebug(new SocStatusEventArgs(mServerStateObj));
         }
 
         protected void FTP_StatusChanged(object sender, SocStatusEventArgs e)
@@ -181,16 +179,18 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         {
             mFtpPort = port;
             FtpSocketListener server;
+
             if (mFtpFilePath.Trim() == "" )
                 server = new FtpSocketListener(mFtpPort);
             else
                 server = new FtpSocketListener(mFtpPort, mFtpFilePath);
-
+            server.SetKey(mFtpKey);
             server.SocStatusChanged += FTP_StatusChanged;
 
             Thread thFTPListener = new Thread(new ParameterizedThreadStart(FTP_Start));
             thFTPListener.Start(server);
-            //FTP_Start(server);
+
+            //포트 할당 기다려 포트값 가져옴
             int i = 0;
             while (true)
             {
@@ -206,26 +206,25 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                     break;
                 }
             }
-            Logger.info("[TcpSocket:FTP_startListening] mFtpPort=" + mFtpPort);
+            Logger.info("할당된 포트(mFtpPort:{0})", mFtpPort);
             if (mFtpPort <= 0) return mFtpPort;
 
             lock (mFtpListenerTableLock)
             {
                 mHtFtpListenerTable.Add(mFtpPort, server);
             }
-            //this.BufferChanged(this, new EventArgs());
             return mFtpPort;
         }
 
         public void FTP_Start(Object server)
         {
-            Logger.info("[TcpSocket:FTP_Start]server starting");
+            Logger.info("FTP Server starting port[{0}]", ((FtpSocketListener)server).getListeningPort());
             ((FtpSocketListener)server).StartListening();
         }
 
         public bool FTP_stop(int port)
         {
-            Logger.info("[TcpSocket:FTP_stop] port=" + port);
+            Logger.info("FTP_stop port[{0}]", port);
             try
             {
                 lock (mClientTableLock)
@@ -237,8 +236,9 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                     mHtClientTable.Remove(port);
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                setErrorMessage(ex,"FTP Server 중지실패");
                 return false;
             }
             return true;
@@ -260,13 +260,16 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
      * 8. Receive BYE
      * 9. Send Bye
      */
-    public class FtpSocketListener : SynchronousSocketListener
+    public class FtpSocketListener : SyncSocListener
     {
         string filePath = "c:\\temp";
-        string fileName = "";
+        string fileName;
+        string tempFullPath;
+        string validFullPath;
         long fileSize = 0;
         long rcvSize = 0;
         FileStream fs;
+        bool closedOnError = false;
 
         FTPStatus transferStatus = FTPStatus.NONE;
 
@@ -280,6 +283,8 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             : base(port)
         {
             mClientSize = 1;
+            mWaitCount = SocConst.FTP_WAIT_COUNT;
+            mWaitTimeOut = SocConst.FTP_WAIT_TIMEOUT;
         }
 
         void Initialize()
@@ -297,7 +302,14 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             {
                 Initialize();
             }
-
+            if (e.Status.status == SocHandlerStatus.ERROR)
+            {
+                if (!closedOnError)
+                {
+                    closedOnError = true;
+                    closeFTPConnection(e.Status);
+                }
+            }
             base.OnSocStatusChanged(e);
         }
 
@@ -312,10 +324,25 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             return mPort;
         }
 
+        private void closeOnError(object socObj, string errMsg)
+        {
+            transferStatus = FTPStatus.NONE;
+            closedOnError = true;
+            closeFTPConnection(socObj);
+            throw new Exception(errMsg);
+        }
         public void closeFTPConnection(object socObj)
         {
+            if (fs != null) fs.Close();
+            if (tempFullPath != null && File.Exists(tempFullPath))
+                File.Delete(tempFullPath);
             this.CloseClient(((StateObject)socObj).soc);
             this.StopListening();
+        }
+
+        public override void ReceiveMsg(object client)
+        {
+            base.ReceiveMsg(client);
         }
 
         public override void ProcessMsg(object socObj)
@@ -326,97 +353,121 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             switch (transferStatus)
             {
                 case FTPStatus.NONE:
+                    //파일수신정보
                     if (stateObj.Cmd == MsgDef.MSG_SEND_FILE)
                     {
-                        //transferStatus = FTPStatus.RECEIVED_FILE_INFO;
                         this.fileName = stateObj.FileName;
                         this.fileSize = stateObj.FileSize;
-
+                        validFullPath = Utils.getValidFileName(filePath, fileName, 0);
+                        tempFullPath = validFullPath + SocConst.TEMP_FILE_SUFFIX;
+                        
+                        //수신대기상태
                         stateObj.data = MsgDef.MSG_ACK;
-                        transferStatus = FTPStatus.RECEIVE_STREAM;
-                        string validFullPath = Utils.getValidFileName(filePath, fileName, 0);
 
-                        stateObj.socMessage = string.Format("[FtpSocket:ProcessMsg] Receiving file {0}[{1}]==>[{2}]",
-                            stateObj.FileName, stateObj.FileSize, validFullPath);
+                        //파일수신상태로 변경
+                        transferStatus = FTPStatus.RECEIVE_STREAM;
+                        this.SetBinary();
+
                         stateObj.status = SocHandlerStatus.RECEIVING;
                         stateObj.ftpStatus = FTPStatus.RECEIVED_FILE_INFO;
-                        this.SetBinary();
-                        OnSocStatusChanged(new SocStatusEventArgs(stateObj));
-                        fs = File.Open(validFullPath, FileMode.CreateNew, FileAccess.Write);
-                        Logger.info(stateObj.socMessage);
+                        stateObj.socMessage = string.Format("파일수신정보[{0}/{1}]==>[{2}]",
+                            stateObj.FileName, stateObj.FileSize, validFullPath);
 
+                        Logger.info(stateObj);
+                        OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
+                        
+                        fs = File.Open(tempFullPath, FileMode.Create, FileAccess.Write);
+                        //수신대기 알림
                         if (SendMsg(stateObj) == SocCode.SOC_ERR_CODE)
                         {
-                            transferStatus = FTPStatus.NONE;
-                            closeFTPConnection(stateObj);
-                            throw new Exception(string.Format("[FtpSocket:ProcessMsg] SendMsg Error in FTPStatus.NONE: {0}", stateObj.data));
+                            closeOnError(stateObj, string.Format("파일수신 대기메시지 전송에러:FTPStatus.NONE/Msg[{0}]", stateObj.data));
                         }
                     }
                     else
                     {
-                        transferStatus = FTPStatus.NONE;
-                        closeFTPConnection(stateObj);
-                        throw new Exception("[FtpSocket:ProcessMsg] Unknown Msg in FTPStatus.NONE");
+                        closeOnError(stateObj, string.Format("Unknown Msg[{0}]:FTPStatus.NONE", stateObj.data));
                     }
                     break;
+
+                //파일 수신
                 case FTPStatus.RECEIVE_STREAM:
-                    //get stream to file
+                    //파일 전송 취소인경우
+                    if (stateObj.Cmd == MsgDef.MSG_CANCEL)
+                    {
+                        //수신종료
+                        stateObj.data = MsgDef.MSG_BYE;
+                        if (SendMsg(stateObj) == SocCode.SOC_ERR_CODE)
+                        {
+                            closeOnError(stateObj, string.Format("파일수신종료메시지 전송에러:FTPStatus.SENT_DONE/Msg[{0}]", stateObj.data));
+                        }
+                        //종료로 상태변경
+                        transferStatus = FTPStatus.SENT_BYE;
+                        stateObj.ftpStatus = FTPStatus.SENT_DONE;
+                        stateObj.status = SocHandlerStatus.DISCONNECTED;
+                        stateObj.socMessage = string.Format("파일수신종료/Msg[{0}]", MsgDef.MSG_BYE);
+                        Logger.info(stateObj);
+                        OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
+                        closeFTPConnection(stateObj);
+                        break;
+                    }
+                    //수신파일스트림 Write
                     fs.Write(stateObj.buffer, 0, stateObj.bufferSize);
                     rcvSize += stateObj.bufferSize;
 
-                    stateObj.socMessage = string.Format("[FtpSocket:ProcessMsg] rcvSize[{0}]/fileSize[{1}]", rcvSize, fileSize);
-                    Logger.debug(stateObj.socMessage);
+                    stateObj.socMessage = string.Format("수신중인 바이트:rcvSize[{0}]/fileSize[{1}]", rcvSize, fileSize);
+                    Logger.debug(stateObj);
+                    //수신완료
                     if (rcvSize >= fileSize)
                     {
                         fs.Close();
-                        stateObj.socMessage = string.Format("[FtpSocket:ProcessMsg] rcvSize[{0}]/fileSize[{1}] Completed.", rcvSize, fileSize);
+                        File.Move(tempFullPath, validFullPath);
+                        stateObj.socMessage = string.Format("수신완료한 바이트 rcvSize[{0}]/fileSize[{1}]", rcvSize, fileSize);
                         transferStatus = FTPStatus.SENT_DONE;
                         this.SetText();
                     }
 
                     stateObj.data = string.Format(MsgDef.MSG_RCVCHECK_FMT, MsgDef.MSG_RCVCHECK, stateObj.bufferSize);
                     stateObj.ftpStatus = FTPStatus.RECEIVE_STREAM;
-                    stateObj.rcvFileSize = rcvSize;
+                    stateObj.fileSizeDone = rcvSize;
                     OnSocStatusChangedOnDebug(new SocStatusEventArgs(stateObj));
-                    Logger.debug("[FtpSocket:ProcessMsg] Sending Msg:{0}", stateObj.data);
+
+                    stateObj.socMessage = string.Format("수신바이트 확인전송:Msg[{0}]", stateObj.data);
+                    Logger.debug(stateObj);
 
                     if (SendMsg(stateObj) == SocCode.SOC_ERR_CODE)
                     {
-                        transferStatus = FTPStatus.NONE;
-                        closeFTPConnection(stateObj);
-                        throw new Exception(string.Format("[FtpSocket:ProcessMsg] SendMsg Error in FTPStatus.RECEIVE_STREAM: {0}", stateObj.data));
+                        closeOnError(stateObj, string.Format("수신바이트 확인전송에러:FTPStatus.RECEIVE_STREAM/Msg[{0}]", stateObj.data));
                     }
 
                     break;
+                    //수신완료
                 case FTPStatus.SENT_DONE:
                     if (stateObj.Cmd == MsgDef.MSG_COMPLETE)
                     {
+                        //수신종료
                         stateObj.data = MsgDef.MSG_BYE;
 
                         if (SendMsg(stateObj) == SocCode.SOC_ERR_CODE)
                         {
-                            transferStatus = FTPStatus.NONE;
-                            closeFTPConnection(stateObj);
-                            throw new Exception(string.Format("[FtpSocket:ProcessMsg] SendMsg Error in FTPStatus.SENT_DONE: {0}", stateObj.data));
+                            closeOnError(stateObj, string.Format("파일수신종료메시지 전송에러:FTPStatus.SENT_DONE/Msg[{0}]", stateObj.data));
 
                         }
                         transferStatus = FTPStatus.SENT_BYE;
                         stateObj.ftpStatus = FTPStatus.SENT_DONE;
                         stateObj.status = SocHandlerStatus.DISCONNECTED;
-                        stateObj.socMessage = string.Format("[FtpSocket:ProcessMsg] Msg:{0}", MsgDef.MSG_BYE);
-                        Logger.info(stateObj.socMessage);
-                        OnSocStatusChanged(new SocStatusEventArgs(stateObj));
+                        stateObj.socMessage = string.Format("파일수신종료:{0}", MsgDef.MSG_BYE);
+                        Logger.info(stateObj);
+                        OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
                         closeFTPConnection(stateObj);
                     }
                     else
                     {
-                        transferStatus = FTPStatus.NONE;
-                        closeFTPConnection(stateObj);
-                        throw new Exception(string.Format("[FtpSocket:ProcessMsg] Unknown Msg[{0}] in FTPStatus.SENT_DONE", stateObj.data));
+                        closeOnError(stateObj, string.Format("Unknown Msg[{0}]:FTPStatus.SENT_DONE", stateObj.data));
                     }
                     break;
             }
-            Logger.debug("[FtpSocket:ProcessMsg]======================================");
+            stateObj.socMessage = string.Format("Ftp ProcessMsg End");
+            Logger.debug(stateObj);
         }
     }
 }

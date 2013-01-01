@@ -36,8 +36,8 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.ControlsNavigationBar = new Elegant.Ui.NavigationBar();
             this.MsgrServerPageToggleButton = new Elegant.Ui.ToggleButton();
             this.MsgrClientPageToggleButton = new Elegant.Ui.ToggleButton();
+            this.IPPhonePageToggleButton = new Elegant.Ui.ToggleButton();
             this.KeyPhonePageToggleButton = new Elegant.Ui.ToggleButton();
-            this.toggleButton3 = new Elegant.Ui.ToggleButton();
             this.toggleButton2 = new Elegant.Ui.ToggleButton();
             this.toggleButton1 = new Elegant.Ui.ToggleButton();
             this.FormFrameSkinner = new Elegant.Ui.FormFrameSkinner();
@@ -49,8 +49,8 @@ namespace Elegant.Ui.Samples.ControlsSample
             // 
             this.ControlsNavigationBar.Controls.Add(this.MsgrServerPageToggleButton);
             this.ControlsNavigationBar.Controls.Add(this.MsgrClientPageToggleButton);
+            this.ControlsNavigationBar.Controls.Add(this.IPPhonePageToggleButton);
             this.ControlsNavigationBar.Controls.Add(this.KeyPhonePageToggleButton);
-            this.ControlsNavigationBar.Controls.Add(this.toggleButton3);
             this.ControlsNavigationBar.Controls.Add(this.toggleButton2);
             this.ControlsNavigationBar.Controls.Add(this.toggleButton1);
             this.ControlsNavigationBar.Dock = System.Windows.Forms.DockStyle.Left;
@@ -90,31 +90,31 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.MsgrClientPageToggleButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.MsgrClientPageToggleButton.PressedChanged += new System.EventHandler(this.MsgrClientPageToggleButton_PressedChanged);
             // 
+            // IPPhonePageToggleButton
+            // 
+            this.IPPhonePageToggleButton.Id = "7d3afc65-5dad-4fb9-a191-4ef86e8d3ecd";
+            this.IPPhonePageToggleButton.KeyTip = "13";
+            this.IPPhonePageToggleButton.Location = new System.Drawing.Point(2, 54);
+            this.IPPhonePageToggleButton.Name = "IPPhonePageToggleButton";
+            this.IPPhonePageToggleButton.RadioGroupName = "NavigationBarToggleButtons";
+            this.IPPhonePageToggleButton.Size = new System.Drawing.Size(169, 24);
+            this.IPPhonePageToggleButton.TabIndex = 19;
+            this.IPPhonePageToggleButton.Text = "IP 폰 연동";
+            this.IPPhonePageToggleButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.IPPhonePageToggleButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+            // 
             // KeyPhonePageToggleButton
             // 
-            this.KeyPhonePageToggleButton.Id = "7d3afc65-5dad-4fb9-a191-4ef86e8d3ecd";
+            this.KeyPhonePageToggleButton.Id = "64628963-75fb-4590-acb8-2e3fc25fb3ee";
             this.KeyPhonePageToggleButton.KeyTip = "13";
-            this.KeyPhonePageToggleButton.Location = new System.Drawing.Point(2, 54);
+            this.KeyPhonePageToggleButton.Location = new System.Drawing.Point(2, 80);
             this.KeyPhonePageToggleButton.Name = "KeyPhonePageToggleButton";
             this.KeyPhonePageToggleButton.RadioGroupName = "NavigationBarToggleButtons";
             this.KeyPhonePageToggleButton.Size = new System.Drawing.Size(169, 24);
-            this.KeyPhonePageToggleButton.TabIndex = 19;
-            this.KeyPhonePageToggleButton.Text = "IP 폰 연동";
+            this.KeyPhonePageToggleButton.TabIndex = 22;
+            this.KeyPhonePageToggleButton.Text = "키폰 연동";
             this.KeyPhonePageToggleButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.KeyPhonePageToggleButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            // 
-            // toggleButton3
-            // 
-            this.toggleButton3.Id = "64628963-75fb-4590-acb8-2e3fc25fb3ee";
-            this.toggleButton3.KeyTip = "13";
-            this.toggleButton3.Location = new System.Drawing.Point(2, 80);
-            this.toggleButton3.Name = "toggleButton3";
-            this.toggleButton3.RadioGroupName = "NavigationBarToggleButtons";
-            this.toggleButton3.Size = new System.Drawing.Size(169, 24);
-            this.toggleButton3.TabIndex = 22;
-            this.toggleButton3.Text = "키폰 연동";
-            this.toggleButton3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.toggleButton3.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             // 
             // toggleButton2
             // 
@@ -179,8 +179,8 @@ namespace Elegant.Ui.Samples.ControlsSample
         private ControlsSamplePageContainer ControlsSamplePageContainer;
         private ToggleButton MsgrServerPageToggleButton;
         private ToggleButton MsgrClientPageToggleButton;
+        private ToggleButton IPPhonePageToggleButton;
         private ToggleButton KeyPhonePageToggleButton;
-        private ToggleButton toggleButton3;
         private ToggleButton toggleButton2;
         private ToggleButton toggleButton1;
     }

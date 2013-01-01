@@ -141,5 +141,27 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                             MessageBoxDefaultButton.Button1,
                             MessageBoxOptions.RtlReading);
         }
+
+        public static byte[] ConvertFileSizeToByteArray(Int32 fileSize)
+        {
+            byte[] buffer = new byte[6];
+            byte[] bDelim = Encoding.UTF8.GetBytes("|");
+            byte[] bSrc = BitConverter.GetBytes(fileSize);
+            Buffer.BlockCopy(bDelim, 0, buffer, 0, bDelim.Length);
+            Buffer.BlockCopy(bSrc, 0, buffer, bDelim.Length, bSrc.Length);
+            Buffer.BlockCopy(bDelim, 0, buffer, bSrc.Length + bDelim.Length, bDelim.Length);
+            return buffer;
+        }
+
+        const string DELIM = "|";
+
+        public static Int32 ConvertByteArrayToFileSize(byte[] b)
+        {
+            string sDelim = Encoding.UTF8.GetString(b, 0, 1);
+            if (sDelim != DELIM) return 0;
+            sDelim = Encoding.UTF8.GetString(b, 5, 1);
+            if (sDelim != DELIM) return 0;
+            return BitConverter.ToInt32(b, 1);
+        }
     }
 }

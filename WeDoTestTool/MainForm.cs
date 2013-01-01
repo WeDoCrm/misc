@@ -38,6 +38,8 @@ namespace Elegant.Ui.Samples.ControlsSample
             //MessageBoxPageToggleButton.Tag = typeof (MessageBoxPage);
             //ColorPickerPageToggleButton.Tag = typeof(ColorPickerPage);
             //NotifyIconPageToggleButton.Tag = typeof(NotifyIconPage);
+            IPPhonePageToggleButton.Tag = typeof(KeyPhonePage);
+            IPPhonePageToggleButton.Tag = typeof(IPPhonePage);
             MsgrServerPageToggleButton.Tag = typeof(MsgrServerPage);
             MsgrClientPageToggleButton.Tag = typeof(MsgrClientPage);
 

@@ -8,6 +8,7 @@ using Elegant.Ui.Samples.ControlsSample.Sockets;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace Elegant.Ui.Samples.ControlsSample
 {
@@ -99,6 +100,14 @@ namespace Elegant.Ui.Samples.ControlsSample
             ProgressBarFileReceiving.Visible = true;
         }
 
+        public void FTP_CancelFile()
+        {
+            if (ftpClient != null)
+            {
+                ftpClient.CancelSending();
+            }
+        }
+
         public void FTP_SendFile()
         {
             mCurTransferSize = 0;
@@ -111,11 +120,11 @@ namespace Elegant.Ui.Samples.ControlsSample
                 }
                 if (ftpClient.SendFile())
                 {
-                    Thread_AppendConsoleMsg(string.Format("Sent:{0} finished.", mFullFileName));
+                    Thread_AppendConsoleMsg(string.Format(">파일전송완료[{0}]", mFullFileName));
                 }
                 else
                 {
-                    Thread_AppendConsoleMsg(string.Format("Sent:{0} error", mFullFileName));
+                    Thread_AppendConsoleMsg(string.Format(">파일전송오류[{0}]", mFullFileName));
                     ftpClient.Close();
                 }
             }
@@ -132,25 +141,27 @@ namespace Elegant.Ui.Samples.ControlsSample
 
         public bool FTP_Init(string ipAddress, int port)
         {
-            if (ftpClient == null || !ftpClient.IsConnected())
-                ftpClient = new FtpClientManager(ipAddress, port);
-            else
-                AppendConsoleMsg("[SERVER_CONNECT]Socket Already Inited.");
+            if (ftpClient != null && ftpClient.IsConnected())
+            {
+                ftpClient.Close();
+            }
+            ftpClient = new FtpClientManager(ipAddress, port, "ftp_cli");
+                //AppendConsoleMsg("[SERVER_CONNECT]Socket Already Inited.");
 
             ftpClient.SocStatusChanged += SocStatusChanged;
 
             if (!ftpClient.IsConnected())
             {
                 if (ftpClient.Connect())
-                    AppendConsoleMsg("[SERVER_CONNECT]Server Connected.");
+                    AppendConsoleMsg(">[SERVER_CONNECT]Server Connected.");
                 else
                 {
-                    AppendConsoleMsg("[SERVER_CONNECT]Server Not Connected.");
+                    AppendConsoleMsg(">[SERVER_CONNECT]Server Not Connected.");
                     return false;
                 }
             }
             else
-                AppendConsoleMsg("[SERVER_CONNECT]Server Already Connected.");
+                AppendConsoleMsg(">[SERVER_CONNECT]Server Already Connected.");
 
             string file = Utils.GetFileName(mFullFileName);
             string path = Utils.GetPath(mFullFileName);
@@ -167,6 +178,7 @@ namespace Elegant.Ui.Samples.ControlsSample
         delegate void SetThreadSocMsgLabelCallback(object sender, SocStatusEventArgs e);
         delegate void SetThreadSocMsgConsoleCallback(object sender, SocStatusEventArgs e, string msg);
         delegate void SetThreadSocMsgCallback(object sender, SocStatusEventArgs e);
+        delegate void SetThreadSocMsgButtonCallback(object sender, SocStatusEventArgs e);
 
 
         string mFullFileName;
@@ -178,25 +190,25 @@ namespace Elegant.Ui.Samples.ControlsSample
         public void TCP_Connect(string ipAddress, int port)
         {
             if (msgClient == null || !msgClient.IsConnected())
-                msgClient = new MsgrClientManager(ipAddress, port);
+                msgClient = new MsgrClientManager(ipAddress, port, "tcp_cli");
             else
-                AppendConsoleMsg("[SERVER_CONNECT]Socket Already Inited.");
+                AppendConsoleMsg(">[SERVER_CONNECT]Socket Already Inited.");
 
             msgClient.SocStatusChanged += SocStatusChanged;
 
             if (!msgClient.IsConnected())
                 msgClient.Connect();
             else
-                AppendConsoleMsg("[SERVER_CONNECT]Server Already Connected.");
+                AppendConsoleMsg(">[SERVER_CONNECT]Server Already Connected.");
 
 
             if (msgClient.IsConnected())
             {
-                AppendConsoleMsg("[SERVER_CONNECT]Server Connected.");
+                AppendConsoleMsg(">[SERVER_CONNECT]Server Connected.");
             }
             else
             {
-                AppendConsoleMsg("[SERVER_CONNECT]Server Not Connected.");
+                AppendConsoleMsg(">[SERVER_CONNECT]Server Not Connected.");
             }
         }
 
@@ -265,18 +277,18 @@ namespace Elegant.Ui.Samples.ControlsSample
             else
             {
                 if (e.Status.socMessage != null && e.Status.socMessage.Trim() != "")
-                    RichTextBoxLog.AppendText("/>socMessage:" + e.Status.socMessage + "\n");
+                    RichTextBoxLog.AppendText(">" + e.Status.socMessage + "\n");
                 if (msg != null && msg.Trim() != "")
-                    RichTextBoxLog.AppendText("/>" + msg + "\n");
+                    RichTextBoxLog.AppendText(">" + msg + "\n");
 
                 if (e.Status.exception != null)
                 {
                     if (e.Status.exception is SocketException)
-                        RichTextBoxLog.AppendText(string.Format("/>Received Socket Error: {0} : {1}",
+                        RichTextBoxLog.AppendText(string.Format(">Error: {0} : {1}",
                             ((SocketException)e.Status.exception).ErrorCode,
                             ((SocketException)e.Status.exception).Message));
                     else
-                        RichTextBoxLog.AppendText(string.Format("Received Socket Error: {0}", e.Status.exception.Message));
+                        RichTextBoxLog.AppendText(string.Format(">Error: {0}", e.Status.exception.Message));
                 }
                 RichTextBoxLog.ScrollToCaret();
             }
@@ -290,9 +302,10 @@ namespace Elegant.Ui.Samples.ControlsSample
             {
                 UpdateFTPStatus(sender, e);
             }
-            else if (e.Status.status == SocHandlerStatus.FTP_END)
+            else if (e.Status.status == SocHandlerStatus.FTP_END
+                || e.Status.status == SocHandlerStatus.FTP_CANCELED)
             {
-                FTP_END();
+                UpdateButtonSendingText(sender, e);
             }
 
             AppendConsoleMsg(sender, e, "");
@@ -300,10 +313,27 @@ namespace Elegant.Ui.Samples.ControlsSample
 
         private void ReceiveMsg()
         {
-            Thread_AppendConsoleMsg("ReceiveMsg ing");
             string msg = msgClient.Receive();
-            Thread_AppendConsoleMsg("ReceiveMsg" + msg);
+            Thread_AppendConsoleMsg(">" + msg);
         }
+
+        private void UpdateButtonSendingText(object sender, SocStatusEventArgs e)
+        {
+
+            if (this.ButtonFileSend.InvokeRequired)
+            {
+                SetThreadSocMsgButtonCallback d = new SetThreadSocMsgButtonCallback(UpdateButtonSendingText);
+                this.Invoke(d, new object[] { sender, e });
+            }
+            else
+            {
+                ButtonFileSend.Text = "파일전송";
+                mIsSending = false;
+
+                FTP_END();
+            }
+        }
+
 
         private void UpdateFTPStatus(object sender, SocStatusEventArgs e)
         {
@@ -363,23 +393,33 @@ namespace Elegant.Ui.Samples.ControlsSample
             if (msgClient == null) { MessageBox.Show("미접속상태"); return; }
 
             msgClient.SendMsg(msg);
-            AppendConsoleMsg("Sent:" + msg);
+            AppendConsoleMsg(">Sent:" + msg);
             Thread thMsgReader = new Thread(new ThreadStart(ReceiveMsg));
             thMsgReader.Start();
         }
-
+        bool mIsSending = false;
         private void ButtonFileSend_Click(object sender, EventArgs e)
         {
+            if (mIsSending)
+            {
+                FTP_CancelFile();
+                mIsSending = false;
+                return;
+            }
+
             if (mFullFileName == null || mFullFileName.Trim() == "")
             {
                 Utils.showMsgBox(this, "파일을 선택하세요.", "경고");
                 return;
             }
-            if (msgClient.SendFile(mFullFileName, mFileSize))
+
+            if (msgClient != null && msgClient.SendFile(mFullFileName, mFileSize))
             {
                 FTP_Init(msgClient.getFtpHostName(), msgClient.getFtpPort());
                 Thread thServer = new Thread(new ThreadStart(FTP_SendFile));
                 thServer.Start();
+                ButtonFileSend.Text = "전송중지";
+                mIsSending = true;
             }
         }
 
@@ -404,6 +444,24 @@ namespace Elegant.Ui.Samples.ControlsSample
         private void BottonLogErase_Click(object sender, EventArgs e)
         {
             RichTextBoxLog.Clear();
+        }
+
+        private void ComboBoxLogLevel_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Logger.setLogLevel((LOGLEVEL)ComboBoxLogLevel.SelectedIndex);
+        }
+
+        private void textBox1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyValue  != 13) return;
+            label1.Text = textBox1.Text;
+            toolTip1.SetToolTip(label1, label1.Text);
+            //Regex reg = new Regex(@"\d\d\d\d\d\d");
+            //foreach (Match m in reg.Matches(textBox1.Text))
+            //{
+            //    TextBoxSocketStatus.AppendText(m.Value + Environment.NewLine);
+            //}
+
         }
 
         //private void treeView1_DragDrop(object sender, DragEventArgs e)

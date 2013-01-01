@@ -9,9 +9,11 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
 {
     public class TcpServerMgr
     {
-        protected SynchronousSocketListener server;
+        protected SyncSocListener server;
         protected Thread thServer;
         protected int mPort = 0;
+        string mTcpKey = "tcp_svr";
+
 
         public event EventHandler<SocStatusEventArgs> SocStatusChanged;
 
@@ -19,7 +21,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         {
             mPort = port;
             server = new TcpSocketListener(mPort);
-
+            server.SetKey(mTcpKey);
         }
 
         public virtual void OnSocStatusChanged(SocStatusEventArgs e)
@@ -55,7 +57,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
 
         public void Start()
         {
-            Logger.info("[TcpServerMgr:Start] server starting");
+            Logger.info("TCP server starting");
             server.StartListening();
         }
 
@@ -65,7 +67,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         }
         public void Stop()
         {
-            Logger.info("[TcpServerMgr:Stop] server stopping");
+            Logger.info("TCP server stopping");
             server.StopListening();
         }
 
@@ -75,7 +77,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         }
         public void listClient()
         {
-            Logger.info("[TcpServerMgr:listClient]connection listup.");
+            Logger.info("TCP connection listup.");
             server.listClient();
         }
 

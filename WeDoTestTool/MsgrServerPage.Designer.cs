@@ -42,12 +42,14 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.ListBoxSelectedItemIndicesLabel = new Elegant.Ui.Label();
             this.EventsLogLabel = new Elegant.Ui.Label();
             this.TextBoxSocketStatus = new Elegant.Ui.TextBox();
+            this.ComboBoxLogLevel = new Elegant.Ui.ComboBox();
             this.ListBoxPagePanel.SuspendLayout();
             this.GroupBoxFileTransferStatus.SuspendLayout();
             this.SuspendLayout();
             // 
             // ListBoxPagePanel
             // 
+            this.ListBoxPagePanel.Controls.Add(this.ComboBoxLogLevel);
             this.ListBoxPagePanel.Controls.Add(this.TextBoxFilePath);
             this.ListBoxPagePanel.Controls.Add(this.ButtonChoosePath);
             this.ListBoxPagePanel.Controls.Add(this.BottonLogErase);
@@ -138,6 +140,7 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.ProgressBarFileReceiving.TabStop = false;
             this.ProgressBarFileReceiving.Text = "ProgressBarFileReceiving";
             this.ProgressBarFileReceiving.Value = 35;
+            this.ProgressBarFileReceiving.Visible = false;
             // 
             // RichTextBoxLog
             // 
@@ -207,6 +210,26 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.TextBoxSocketStatus.TabIndex = 2;
             this.TextBoxSocketStatus.TextEditorWidth = 296;
             // 
+            // ComboBoxLogLevel
+            // 
+            this.ComboBoxLogLevel.Editable = false;
+            this.ComboBoxLogLevel.FormattingEnabled = false;
+            this.ComboBoxLogLevel.Id = "396a9314-cbe6-4667-9b2c-367782a7e75a";
+            this.ComboBoxLogLevel.Items.AddRange(new object[] {
+            "error",
+            "info",
+            "debug"});
+            this.ComboBoxLogLevel.KeyTip = "B";
+            this.ComboBoxLogLevel.LabelAreaWidthTemplate = "log level setting:";
+            this.ComboBoxLogLevel.LabelText = "log level setting:";
+            this.ComboBoxLogLevel.Location = new System.Drawing.Point(579, 8);
+            this.ComboBoxLogLevel.Name = "ComboBoxLogLevel";
+            this.ComboBoxLogLevel.ScreenTip.Text = "Buttons";
+            this.ComboBoxLogLevel.Size = new System.Drawing.Size(159, 20);
+            this.ComboBoxLogLevel.TabIndex = 31;
+            this.ComboBoxLogLevel.TextEditorWidth = 10;
+            this.ComboBoxLogLevel.SelectedIndexChanged += new System.EventHandler(this.ComboBoxLogLevel_SelectedIndexChanged);
+            // 
             // MsgrServerPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -238,5 +261,6 @@ namespace Elegant.Ui.Samples.ControlsSample
         private Button BottonLogErase;
         private TextBox TextBoxFilePath;
         private Button ButtonChoosePath;
+        private ComboBox ComboBoxLogLevel;
     }
 }

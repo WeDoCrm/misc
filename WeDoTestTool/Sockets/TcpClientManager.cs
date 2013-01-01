@@ -7,7 +7,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
     public class TcpClientManager
     {
 
-        protected SynchronousSocketClient mSocClient;
+        protected SyncSocClient mSocClient;
         //SocStreamClient         mstreamClient;
         protected StateObject stateObj;
 
@@ -19,12 +19,22 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
 
         public event EventHandler<SocStatusEventArgs> SocStatusChanged;
 
-        public TcpClientManager(string ipAddress, int port)
+        public TcpClientManager(string ipAddress, int port) : this(ipAddress, port, "")
         {
-            mSocClient = new SynchronousSocketClient(ipAddress, port);
-            mSocClient.SocStatusChanged += TcpClientStatusChanged;
+        }
 
+        public TcpClientManager(string ipAddress, int port, string key, int timeout)
+        {
+            mSocClient = new SyncSocClient(ipAddress, port, timeout);
+            mSocClient.SocStatusChanged += TcpClientStatusChanged;
+            mSocClient.SetKey(key);
             stateObj = new StateObject(mSocClient.getSocket());
+            stateObj.key = key;
+        }
+
+
+        public TcpClientManager(string ipAddress, int port, string key) : this(ipAddress, port, key, SocConst.SOC_TIME_OUT_MIL_SEC)
+        {
         }
 
 
@@ -68,12 +78,12 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
 
             if (mSocClient.ReadLine() != MsgDef.MSG_BYE)
             {
-                Logger.error("[TcpClient:Close] Send Bye Error");
+                Logger.error("[TcpClient:Close] 종료메시지 전송에러");
             }
 
             mSocClient.Close();
             stateObj.status = SocHandlerStatus.DISCONNECTED;
-            OnSocStatusChanged(new SocStatusEventArgs(stateObj));
+            OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
         }
 
         public virtual void OnSocStatusChanged(SocStatusEventArgs e)
@@ -84,6 +94,24 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             {
                 handler(this, e);
             }
+        }
+
+        public virtual void OnSocStatusChangedOnDebug(SocStatusEventArgs e)
+        {
+            if (Logger.level >= LOGLEVEL.DEBUG)
+                OnSocStatusChanged(e);
+        }
+
+        public virtual void OnSocStatusChangedOnInfo(SocStatusEventArgs e)
+        {
+            if (Logger.level >= LOGLEVEL.INFO)
+                OnSocStatusChanged(e);
+        }
+
+        public virtual void OnSocStatusChangedOnError(SocStatusEventArgs e)
+        {
+            if (Logger.level >= LOGLEVEL.ERROR)
+                OnSocStatusChanged(e);
         }
 
         protected virtual void TcpClientStatusChanged(object sender, SocStatusEventArgs e)

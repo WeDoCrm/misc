@@ -11,6 +11,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
     {
         public const char TOKEN = '|';
         public const int MAX_BUFFER_SIZE = 1024 * 16 * 1024;
+        public const int TEMP_BUFFER_SIZE = 1024 * 512;
         public const int MAX_STR_BUFFER_SIZE = 1024 * 4;
         public const string LOCAL_HOST = "127.0.0.1";
         public const int FTP_PORT = 1101;
@@ -20,6 +21,11 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         public const string LOG_FILE_FMT = "yyyyMMdd";
         public const string LOG_DATE_TIME_FMT = "yyyy-MM-dd HH:mm:sss";
         public const int SOC_TIME_OUT_MIL_SEC = 1000;
+        public const int PREFIX_BYTE_INFO_LENGTH = 6;
+        public const string TEMP_FILE_SUFFIX = ".temporary";
+        public const int FTP_WAIT_COUNT = 5;
+        public const int FTP_WAIT_TIMEOUT = 2000;
+        public const string FTP_DEFAULT_KEY = "FTP_CLI";
     }
 
     public class MsgDef
@@ -41,6 +47,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         public const string MSG_RCVCHECK_FMT = "{0}|{1}";
         public const string MSG_LISTEN_INFO_FMT = "{0}|{1}|{2}";
         public const string MSG_TEXT_FMT = "{0}|{1}";
+        public const string MSG_BINARY_FMT = "{0}|{1}";
     }
 
     public class SocCode

@@ -28,8 +28,12 @@ namespace Elegant.Ui.Samples.ControlsSample
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.ListBoxPagePanel = new Elegant.Ui.Panel();
+            this.ComboBoxLogLevel = new Elegant.Ui.ComboBox();
+            this.BottonLogErase = new Elegant.Ui.Button();
             this.groupBox1 = new Elegant.Ui.GroupBox();
+            this.label1 = new Elegant.Ui.Label();
             this.TextBoxClientId = new Elegant.Ui.TextBox();
             this.RadoiButtonDefinedHost = new Elegant.Ui.RadioButton();
             this.RadoiButtonLocalhost = new Elegant.Ui.RadioButton();
@@ -43,6 +47,7 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.ButtonMsgrConnect = new Elegant.Ui.Button();
             this.ButtonMsgrClose = new Elegant.Ui.Button();
             this.GroupBoxMsgrContent = new Elegant.Ui.GroupBox();
+            this.textBox1 = new Elegant.Ui.TextBox();
             this.TextBoxTargetClientId = new Elegant.Ui.TextBox();
             this.ProgressBarFileReceiving = new Elegant.Ui.ProgressBar();
             this.ButtonTextSend = new Elegant.Ui.Button();
@@ -54,7 +59,7 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.RichTextBoxLog = new System.Windows.Forms.RichTextBox();
             this.EventsLogLabel = new Elegant.Ui.Label();
             this.TextBoxSocketStatus = new Elegant.Ui.TextBox();
-            this.BottonLogErase = new Elegant.Ui.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.ListBoxPagePanel.SuspendLayout();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.NumericUpDnRetryCnt)).BeginInit();
@@ -64,6 +69,7 @@ namespace Elegant.Ui.Samples.ControlsSample
             // 
             // ListBoxPagePanel
             // 
+            this.ListBoxPagePanel.Controls.Add(this.ComboBoxLogLevel);
             this.ListBoxPagePanel.Controls.Add(this.BottonLogErase);
             this.ListBoxPagePanel.Controls.Add(this.groupBox1);
             this.ListBoxPagePanel.Controls.Add(this.GroupBoxMsgrContent);
@@ -77,8 +83,41 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.ListBoxPagePanel.TabIndex = 0;
             this.ListBoxPagePanel.Text = "ListBoxPagePanel";
             // 
+            // ComboBoxLogLevel
+            // 
+            this.ComboBoxLogLevel.Editable = false;
+            this.ComboBoxLogLevel.FormattingEnabled = false;
+            this.ComboBoxLogLevel.Id = "d2586068-aff0-4047-b375-e047fd432b2f";
+            this.ComboBoxLogLevel.Items.AddRange(new object[] {
+            "error",
+            "info",
+            "debug"});
+            this.ComboBoxLogLevel.KeyTip = "B";
+            this.ComboBoxLogLevel.LabelAreaWidthTemplate = "log level setting:";
+            this.ComboBoxLogLevel.LabelText = "log level setting:";
+            this.ComboBoxLogLevel.Location = new System.Drawing.Point(579, 10);
+            this.ComboBoxLogLevel.Name = "ComboBoxLogLevel";
+            this.ComboBoxLogLevel.ScreenTip.Text = "Buttons";
+            this.ComboBoxLogLevel.Size = new System.Drawing.Size(159, 20);
+            this.ComboBoxLogLevel.TabIndex = 26;
+            this.ComboBoxLogLevel.TextEditorWidth = 10;
+            this.ComboBoxLogLevel.SelectedIndexChanged += new System.EventHandler(this.ComboBoxLogLevel_SelectedIndexChanged);
+            // 
+            // BottonLogErase
+            // 
+            this.BottonLogErase.Id = "ea1a554e-7a8c-4824-884c-75c0d0adbccd";
+            this.BottonLogErase.KeyTip = "C";
+            this.BottonLogErase.Location = new System.Drawing.Point(348, 394);
+            this.BottonLogErase.Name = "BottonLogErase";
+            this.BottonLogErase.ScreenTip.Text = "Change the Icon";
+            this.BottonLogErase.Size = new System.Drawing.Size(25, 18);
+            this.BottonLogErase.TabIndex = 27;
+            this.BottonLogErase.Text = "지움";
+            this.BottonLogErase.Click += new System.EventHandler(this.BottonLogErase_Click);
+            // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.TextBoxClientId);
             this.groupBox1.Controls.Add(this.RadoiButtonDefinedHost);
             this.groupBox1.Controls.Add(this.RadoiButtonLocalhost);
@@ -97,6 +136,15 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.groupBox1.Size = new System.Drawing.Size(352, 146);
             this.groupBox1.TabIndex = 25;
             this.groupBox1.Text = "접속정보";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = false;
+            this.label1.Location = new System.Drawing.Point(15, 123);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(143, 12);
+            this.label1.TabIndex = 28;
+            this.label1.Text = "Events Log";
             // 
             // TextBoxClientId
             // 
@@ -283,6 +331,7 @@ namespace Elegant.Ui.Samples.ControlsSample
             // 
             // GroupBoxMsgrContent
             // 
+            this.GroupBoxMsgrContent.Controls.Add(this.textBox1);
             this.GroupBoxMsgrContent.Controls.Add(this.TextBoxTargetClientId);
             this.GroupBoxMsgrContent.Controls.Add(this.ProgressBarFileReceiving);
             this.GroupBoxMsgrContent.Controls.Add(this.ButtonTextSend);
@@ -297,6 +346,19 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.GroupBoxMsgrContent.Size = new System.Drawing.Size(352, 136);
             this.GroupBoxMsgrContent.TabIndex = 24;
             this.GroupBoxMsgrContent.Text = "전송내용";
+            // 
+            // textBox1
+            // 
+            this.textBox1.Id = "807d4090-8202-4716-a378-86704c7d3ee0";
+            this.textBox1.KeyTip = "T";
+            this.textBox1.LabelAreaWidthTemplate = "";
+            this.textBox1.Location = new System.Drawing.Point(14, 90);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.ScreenTip.Text = "Balloon tip title";
+            this.textBox1.Size = new System.Drawing.Size(185, 20);
+            this.textBox1.TabIndex = 27;
+            this.textBox1.TextEditorWidth = 179;
+            this.textBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox1_KeyDown);
             // 
             // TextBoxTargetClientId
             // 
@@ -427,18 +489,6 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.TextBoxSocketStatus.TabIndex = 2;
             this.TextBoxSocketStatus.TextEditorWidth = 346;
             // 
-            // BottonLogErase
-            // 
-            this.BottonLogErase.Id = "ea1a554e-7a8c-4824-884c-75c0d0adbccd";
-            this.BottonLogErase.KeyTip = "C";
-            this.BottonLogErase.Location = new System.Drawing.Point(348, 394);
-            this.BottonLogErase.Name = "BottonLogErase";
-            this.BottonLogErase.ScreenTip.Text = "Change the Icon";
-            this.BottonLogErase.Size = new System.Drawing.Size(25, 18);
-            this.BottonLogErase.TabIndex = 27;
-            this.BottonLogErase.Text = "지움";
-            this.BottonLogErase.Click += new System.EventHandler(this.BottonLogErase_Click);
-            // 
             // MsgrClientPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -487,5 +537,9 @@ namespace Elegant.Ui.Samples.ControlsSample
         private TextBox TextBoxClientId;
         private TextBox TextBoxTargetClientId;
         private Button BottonLogErase;
+        private ComboBox ComboBoxLogLevel;
+        private TextBox textBox1;
+        private Label label1;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }

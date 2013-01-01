@@ -18,25 +18,11 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             this.soc = soc;
         }
 
-        //public StateObject(Socket soc,string key)
-        //{
-        //    this.soc = soc;
-        //    this.key = key;
-        //}
-
         public StateObject(Exception e)
         {
             status = SocHandlerStatus.ERROR;
             this.exception = e;
         }
-
-        //public StateObject(Exception e, string key)
-        //{
-        //    status = SocHandlerStatus.ERROR;
-        //    this.exception = e;
-        //    this.key = key;
-        //}
-
 
         public StateObject(Socket soc, string msg)
         {
@@ -44,12 +30,6 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             this.data = msg;
         }
 
-        //public StateObject(Socket soc, string msg, string key)
-        //{
-        //    this.soc = soc;
-        //    this.data = msg;
-        //    this.key = key;
-        //}
 
         // Client socket.
         public Socket soc = null;
@@ -94,7 +74,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
 
         string fileName;
         long fileSize;
-        public long rcvFileSize;
+        public long fileSizeDone;
 
         public string FileName
         {
@@ -119,11 +99,25 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
 
         private void setFileInfo()
         {
+            if (data == null) return;
             string[] list = this.data.Split(SocConst.TOKEN);
             if (list.Length != 3) return;
 
             fileName = list[1];
             fileSize = Convert.ToInt64(list[2]);
+        }
+
+    }
+
+    public class WeDoFTPCancelException : Exception
+    {
+        public WeDoFTPCancelException()
+            : base()
+        {
+        }
+        public WeDoFTPCancelException(string message)
+            : base(message)
+        {
         }
 
     }
