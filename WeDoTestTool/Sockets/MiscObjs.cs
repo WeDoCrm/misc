@@ -11,36 +11,45 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
 
         public StateObject()
         {
-            status = SocHandlerStatus.UNINIT;
-            msgStatus = MSGStatus.NONE;
-            ftpStatus = FTPStatus.NONE;
         }
 
         public StateObject(Socket soc)
         {
-            status = SocHandlerStatus.UNINIT;
             this.soc = soc;
-            msgStatus = MSGStatus.NONE;
-            ftpStatus = FTPStatus.NONE;
         }
+
+        //public StateObject(Socket soc,string key)
+        //{
+        //    this.soc = soc;
+        //    this.key = key;
+        //}
 
         public StateObject(Exception e)
         {
             status = SocHandlerStatus.ERROR;
             this.exception = e;
-            msgStatus = MSGStatus.NONE;
-            ftpStatus = FTPStatus.NONE;
         }
+
+        //public StateObject(Exception e, string key)
+        //{
+        //    status = SocHandlerStatus.ERROR;
+        //    this.exception = e;
+        //    this.key = key;
+        //}
 
 
         public StateObject(Socket soc, string msg)
         {
-            status = SocHandlerStatus.UNINIT;
             this.soc = soc;
             this.data = msg;
-            msgStatus = MSGStatus.NONE;
-            ftpStatus = FTPStatus.NONE;
         }
+
+        //public StateObject(Socket soc, string msg, string key)
+        //{
+        //    this.soc = soc;
+        //    this.data = msg;
+        //    this.key = key;
+        //}
 
         // Client socket.
         public Socket soc = null;
@@ -51,6 +60,8 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         // Received data string.
         //public StringBuilder data = new StringBuilder();
         public string data;
+
+        public string key;
 
         string cmd;
         int mode;
@@ -73,11 +84,11 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         }
         public string socMessage { get; set; }
         public string socErrorMessage { get; set; }
-        public SocHandlerStatus status { get; set; }
+        public SocHandlerStatus status = SocHandlerStatus.UNINIT;
         public Exception exception = null;
 
-        public MSGStatus msgStatus { get; set; }
-        public FTPStatus ftpStatus { get; set; }
+        public MSGStatus msgStatus = MSGStatus.NONE;
+        public FTPStatus ftpStatus = FTPStatus.NONE;
 
         public int ftpPort { get; set; }
 

@@ -55,7 +55,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                          * 4. Cli A Ask Svr Info
                          * 5. Svr B Send Info
                          */
-                        int port = FTP_startListening();
+                        int port = FTP_startListening(0);
 
                         if (port > 0)
                         {
@@ -129,6 +129,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                      */
                     if (stateObj.Cmd == MsgDef.MSG_COMPLETE)
                     {
+                        break;
                         stateObj.socMessage = string.Format("[TcpSocket:ProcessMsg] Received Msg: {0}",
                             stateObj.data);
                         OnSocStatusChanged(new SocStatusEventArgs(stateObj));
@@ -176,9 +177,9 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             base.OnSocStatusChanged(e);
         }
 
-        public int FTP_startListening()
+        public int FTP_startListening(int port)
         {
-            mFtpPort = 0;
+            mFtpPort = port;
             FtpSocketListener server;
             if (mFtpFilePath.Trim() == "" )
                 server = new FtpSocketListener(mFtpPort);

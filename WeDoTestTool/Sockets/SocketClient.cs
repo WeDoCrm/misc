@@ -36,7 +36,10 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             {
                 // Establish the remote endpoint for the socket.
                 // This example uses port 11000 on the local computer.
-                //IPHostEntry ipHostInfo = Dns.Resolve(_ipAddress);
+                //IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
+                //string strIP = ipHostInfo.AddressList[0].ToString();
+                //IPAddress hostIP = IPAddress.Parse(strIP);
+
                 //IPHostEntry ipHostInfo = Dns.GetHostEntry(_ipAddress);
                 //IPAddress ipAddress = ipHostInfo.AddressList[2];  //[2]는 ip4 나머지 [0],[1],[3]은 ip6
                 IPAddress ipAddress = System.Net.IPAddress.Parse(_ipAddress);

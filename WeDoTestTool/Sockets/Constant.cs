@@ -67,9 +67,10 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         FTP_START = 5,
         FTP_SENDING = 6,
         FTP_END = 7,
-        DISCONNECTED = 8,
-        LISTENING = 9,
-        STOP = 10
+        FTP_CANCELED = 8,
+        DISCONNECTED = 9,
+        LISTENING = 10,
+        STOP = 11
     }
 
     public enum FTPStatus
