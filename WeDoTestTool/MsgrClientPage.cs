@@ -303,7 +303,8 @@ namespace Elegant.Ui.Samples.ControlsSample
                 UpdateFTPStatus(sender, e);
             }
             else if (e.Status.status == SocHandlerStatus.FTP_END
-                || e.Status.status == SocHandlerStatus.FTP_CANCELED)
+                || e.Status.status == SocHandlerStatus.FTP_CANCELED
+                || e.Status.status == SocHandlerStatus.FTP_SERVER_CANCELED)
             {
                 UpdateButtonSendingText(sender, e);
             }

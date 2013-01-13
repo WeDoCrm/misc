@@ -62,6 +62,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             // Create a TCP/IP socket.
             mServerSoc = new Socket(AddressFamily.InterNetwork,
                 SocketType.Stream, ProtocolType.Tcp);
+            mServerSoc.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, (int)1);
 
             // Bind the socket to the local endpoint and 
             // listen for incoming connections.
@@ -91,8 +92,11 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                             if (mWaitCount > 0) //0인경우 무한반복허용
                                 waitCount++;
                             if (mWaitCount > 0 && waitCount >= mWaitCount)
-                                throw new Exception(string.Format("Wait 횟수 {0}회 초과.", waitCount));
-
+                            {
+                                Logger.info(string.Format("Wait 횟수 {0}회 초과.", waitCount));
+                                StopListening();
+                                break;
+                            }
                             mServerStateObj.socMessage = string.Format("Wait 허용접속자수 초과 {0} >= {1}", mHtClientTable.Count, mClientSize);
                             Logger.debug(mServerStateObj);
                             System.Threading.Thread.Sleep(SocConst.WAIT_MIL_SEC);

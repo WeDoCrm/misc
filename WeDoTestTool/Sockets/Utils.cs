@@ -47,7 +47,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             if (index == 0)
                 return fileName;
             else
-                return string.Format("{0}_{1}.{2}", shortFileName, index, extension);
+                return string.Format("{0}({1}).{2}", shortFileName, index, extension);
         }
 
         public static string getValidFileName(string path, string fileName, int index)

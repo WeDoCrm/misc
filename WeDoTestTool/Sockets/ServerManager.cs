@@ -85,6 +85,13 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         {
             server.BroadCast(msg);
         }
+
+        public void CancelReceiving()
+        {
+            int port = (server as TcpSocketListener).FTP_getActivePort();
+            (server as TcpSocketListener).FTP_cancel(port);
+        }
+
     }
 
     public class FtpServerMgr : TcpServerMgr
@@ -115,5 +122,6 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             thServer.Start();
             //this.BufferChanged(this, new EventArgs());
         }
+
     }
 }

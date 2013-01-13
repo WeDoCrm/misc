@@ -19,6 +19,7 @@ namespace Elegant.Ui.Samples.ControlsSample
         delegate void CallbackProgressBarFileEnd(object sender, SocStatusEventArgs e);
         delegate void CallbackRichTextBoxLog(object sender, SocStatusEventArgs e, string str);
         delegate void CallbackTextBoxSocketStatus(object sender, SocStatusEventArgs e, string str);
+        delegate void CallbackCancelButtonStatus(object sender, SocStatusEventArgs e);
 
         private readonly FolderBrowserDialog _openDirectoryDialog;
 
@@ -65,6 +66,7 @@ namespace Elegant.Ui.Samples.ControlsSample
         {
             mServer.listClient();
         }
+
         private void ProgressBarStatusChanged(object sender, SocStatusEventArgs e)
         {
             if (this.ProgressBarFileReceiving.InvokeRequired)
@@ -78,6 +80,7 @@ namespace Elegant.Ui.Samples.ControlsSample
                 Logger.info("ProgressBarFileReceiving.Value=" + ProgressBarFileReceiving.Value);
             }
         }
+
         private void ProgressBarFileBegin(object sender, SocStatusEventArgs e)
         {
             if (this.ProgressBarFileReceiving.InvokeRequired)
@@ -142,9 +145,20 @@ namespace Elegant.Ui.Samples.ControlsSample
                 AddEventsLogMessage(strStatus);
                 //UpdateListBoxSelectedItemIndicesTextBox();
             }
-
         }
 
+        private void ButtonCancelStatusChanged(object sender, SocStatusEventArgs e)
+        {
+            if (this.ButtonStopReceiving.InvokeRequired)
+            {
+                CallbackCancelButtonStatus d = new CallbackCancelButtonStatus(ButtonCancelStatusChanged);
+                this.Invoke(d, new object[] { sender, e });
+            }
+            else
+            {
+                //ButtonStopReceiving.Enabled = !ButtonStopReceiving.Enabled;
+            }
+        }
 
         private void SocStatusChanged(object sender, SocStatusEventArgs e)
         {
@@ -187,10 +201,12 @@ namespace Elegant.Ui.Samples.ControlsSample
             if (e.Status.ftpStatus == FTPStatus.RECEIVED_FILE_INFO)
             {
                 ProgressBarFileBegin(sender, e);
+                ButtonCancelStatusChanged(sender, e);
             }
             if (e.Status.ftpStatus == FTPStatus.SENT_DONE)
             {
                 ProgressBarFileEnd(sender, e);
+                ButtonCancelStatusChanged(sender, e);
             }
 
             RichTextBoxLogChanged(sender, e, strStatus);
@@ -285,6 +301,11 @@ namespace Elegant.Ui.Samples.ControlsSample
         private void ComboBoxLogLevel_SelectedIndexChanged(object sender, EventArgs e)
         {
             Logger.setLogLevel((LOGLEVEL)ComboBoxLogLevel.SelectedIndex);
+        }
+
+        private void ButtonStopReceiving_Click(object sender, EventArgs e)
+        {
+            mServer.CancelReceiving();
         }
 
     }

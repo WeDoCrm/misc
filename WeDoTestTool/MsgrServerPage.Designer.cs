@@ -29,11 +29,13 @@ namespace Elegant.Ui.Samples.ControlsSample
         private void InitializeComponent()
         {
             this.ListBoxPagePanel = new Elegant.Ui.Panel();
+            this.ComboBoxLogLevel = new Elegant.Ui.ComboBox();
             this.TextBoxFilePath = new Elegant.Ui.TextBox();
             this.ButtonChoosePath = new Elegant.Ui.Button();
             this.BottonLogErase = new Elegant.Ui.Button();
             this.ButtonListClient = new Elegant.Ui.Button();
             this.GroupBoxFileTransferStatus = new Elegant.Ui.GroupBox();
+            this.ButtonStopReceiving = new Elegant.Ui.Button();
             this.ProgressBarFileReceiving = new Elegant.Ui.ProgressBar();
             this.RichTextBoxLog = new System.Windows.Forms.RichTextBox();
             this.ButtonServerStop = new Elegant.Ui.Button();
@@ -42,7 +44,6 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.ListBoxSelectedItemIndicesLabel = new Elegant.Ui.Label();
             this.EventsLogLabel = new Elegant.Ui.Label();
             this.TextBoxSocketStatus = new Elegant.Ui.TextBox();
-            this.ComboBoxLogLevel = new Elegant.Ui.ComboBox();
             this.ListBoxPagePanel.SuspendLayout();
             this.GroupBoxFileTransferStatus.SuspendLayout();
             this.SuspendLayout();
@@ -68,6 +69,26 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.ListBoxPagePanel.Size = new System.Drawing.Size(761, 415);
             this.ListBoxPagePanel.TabIndex = 0;
             this.ListBoxPagePanel.Text = "ListBoxPagePanel";
+            // 
+            // ComboBoxLogLevel
+            // 
+            this.ComboBoxLogLevel.Editable = false;
+            this.ComboBoxLogLevel.FormattingEnabled = false;
+            this.ComboBoxLogLevel.Id = "396a9314-cbe6-4667-9b2c-367782a7e75a";
+            this.ComboBoxLogLevel.Items.AddRange(new object[] {
+            "error",
+            "info",
+            "debug"});
+            this.ComboBoxLogLevel.KeyTip = "B";
+            this.ComboBoxLogLevel.LabelAreaWidthTemplate = "log level setting:";
+            this.ComboBoxLogLevel.LabelText = "log level setting:";
+            this.ComboBoxLogLevel.Location = new System.Drawing.Point(579, 8);
+            this.ComboBoxLogLevel.Name = "ComboBoxLogLevel";
+            this.ComboBoxLogLevel.ScreenTip.Text = "Buttons";
+            this.ComboBoxLogLevel.Size = new System.Drawing.Size(159, 20);
+            this.ComboBoxLogLevel.TabIndex = 31;
+            this.ComboBoxLogLevel.TextEditorWidth = 10;
+            this.ComboBoxLogLevel.SelectedIndexChanged += new System.EventHandler(this.ComboBoxLogLevel_SelectedIndexChanged);
             // 
             // TextBoxFilePath
             // 
@@ -118,6 +139,7 @@ namespace Elegant.Ui.Samples.ControlsSample
             // 
             // GroupBoxFileTransferStatus
             // 
+            this.GroupBoxFileTransferStatus.Controls.Add(this.ButtonStopReceiving);
             this.GroupBoxFileTransferStatus.Controls.Add(this.ProgressBarFileReceiving);
             this.GroupBoxFileTransferStatus.Id = "b1816ca8-fcbd-4141-8e77-e74a8131c8cb";
             this.GroupBoxFileTransferStatus.Location = new System.Drawing.Point(385, 259);
@@ -126,13 +148,23 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.GroupBoxFileTransferStatus.TabIndex = 13;
             this.GroupBoxFileTransferStatus.Text = "파일전송상태";
             // 
+            // ButtonStopReceiving
+            // 
+            this.ButtonStopReceiving.Id = "1169f583-d090-4d24-899f-97d7e5173655";
+            this.ButtonStopReceiving.Location = new System.Drawing.Point(288, 27);
+            this.ButtonStopReceiving.Name = "ButtonStopReceiving";
+            this.ButtonStopReceiving.Size = new System.Drawing.Size(38, 21);
+            this.ButtonStopReceiving.TabIndex = 32;
+            this.ButtonStopReceiving.Text = "취소";
+            this.ButtonStopReceiving.Click += new System.EventHandler(this.ButtonStopReceiving_Click);
+            // 
             // ProgressBarFileReceiving
             // 
             this.ProgressBarFileReceiving.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.ProgressBarFileReceiving.DesiredWidth = 275;
             this.ProgressBarFileReceiving.Id = "67c153a6-5a5b-406f-83ed-3b4c260bd9bf";
-            this.ProgressBarFileReceiving.Location = new System.Drawing.Point(37, 27);
+            this.ProgressBarFileReceiving.Location = new System.Drawing.Point(12, 27);
             this.ProgressBarFileReceiving.Name = "ProgressBarFileReceiving";
             this.ProgressBarFileReceiving.ScreenTip.Text = "Progress bar";
             this.ProgressBarFileReceiving.Size = new System.Drawing.Size(275, 21);
@@ -210,26 +242,6 @@ namespace Elegant.Ui.Samples.ControlsSample
             this.TextBoxSocketStatus.TabIndex = 2;
             this.TextBoxSocketStatus.TextEditorWidth = 296;
             // 
-            // ComboBoxLogLevel
-            // 
-            this.ComboBoxLogLevel.Editable = false;
-            this.ComboBoxLogLevel.FormattingEnabled = false;
-            this.ComboBoxLogLevel.Id = "396a9314-cbe6-4667-9b2c-367782a7e75a";
-            this.ComboBoxLogLevel.Items.AddRange(new object[] {
-            "error",
-            "info",
-            "debug"});
-            this.ComboBoxLogLevel.KeyTip = "B";
-            this.ComboBoxLogLevel.LabelAreaWidthTemplate = "log level setting:";
-            this.ComboBoxLogLevel.LabelText = "log level setting:";
-            this.ComboBoxLogLevel.Location = new System.Drawing.Point(579, 8);
-            this.ComboBoxLogLevel.Name = "ComboBoxLogLevel";
-            this.ComboBoxLogLevel.ScreenTip.Text = "Buttons";
-            this.ComboBoxLogLevel.Size = new System.Drawing.Size(159, 20);
-            this.ComboBoxLogLevel.TabIndex = 31;
-            this.ComboBoxLogLevel.TextEditorWidth = 10;
-            this.ComboBoxLogLevel.SelectedIndexChanged += new System.EventHandler(this.ComboBoxLogLevel_SelectedIndexChanged);
-            // 
             // MsgrServerPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -262,5 +274,6 @@ namespace Elegant.Ui.Samples.ControlsSample
         private TextBox TextBoxFilePath;
         private Button ButtonChoosePath;
         private ComboBox ComboBoxLogLevel;
+        private Button ButtonStopReceiving;
     }
 }

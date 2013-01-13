@@ -11,6 +11,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         string mFileName;
         string mFullPath;
         bool IsCanceled = false;
+        FileStream mFs;
 
         public FtpClientManager(string ipAddress, int port)
             : base(ipAddress, port, "ftp_cli", SocConst.FTP_WAIT_TIMEOUT)
@@ -80,10 +81,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
 
             if (!fInfo.Exists)
             {
-                stateObj.status = SocHandlerStatus.FTP_END;
-                stateObj.socMessage = string.Format("File Not Found[{0}]", mFileName);
-                Logger.error(stateObj);
-                OnSocStatusChangedOnError(new SocStatusEventArgs(stateObj));
+                _internalHandleOnError(string.Format("File Not Found[{0}]", mFileName));
                 return false;
             }
             //파일정보 전송
@@ -93,100 +91,117 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
 
             stateObj.socMessage = string.Format("파일정보전송:Msg[{0}]", msgRequest);
             Logger.debug(stateObj);
+
             if (mSocClient.Send(msgRequest) != Encoding.UTF8.GetBytes(msgRequest).Length)
             {
-                stateObj.status = SocHandlerStatus.FTP_END;
-                stateObj.socMessage = string.Format("파일정보전송에러:Msg[{0}]", msgRequest);
-                Logger.error(stateObj);
-                OnSocStatusChangedOnError(new SocStatusEventArgs(stateObj));
+                _internalHandleOnError(string.Format("파일정보전송에러:Msg[{0}]", msgRequest));
                 return false;
             }
 
             //수신준비상태확인 
             stateObj.bufferSize = 0;
-            stateObj.status = SocHandlerStatus.FTP_SENDING;
             OnSocStatusChangedOnDebug(new SocStatusEventArgs(stateObj));
 
             stateObj.data = mSocClient.ReadLine();
             if (stateObj.data != MsgDef.MSG_ACK)
             {
-                stateObj.socMessage = string.Format("수신준비 비정상상태:Unknown Msg[{0}]/file[{1}]", stateObj.data, mFullPath);
-                Logger.error(stateObj);
-                stateObj.status = SocHandlerStatus.FTP_END;
-                OnSocStatusChangedOnError(new SocStatusEventArgs(stateObj));
+                _internalHandleOnError(string.Format("수신준비 비정상상태:Unknown Msg[{0}]/file[{1}]", stateObj.data, mFullPath));
                 return false;
             }
             return true;
         }
 
+        private void _internalHandleOnError(string msg)
+        {
+            stateObj.socMessage = msg;
+            Logger.error(stateObj);
+            stateObj.status = SocHandlerStatus.FTP_ERROR;
+            mSocClient.SetText();
+            if (mFs != null) mFs.Close();
+            OnSocStatusChangedOnError(new SocStatusEventArgs(stateObj));
+        }
+
         //파일전송
         public bool InternalSendFile() {
+            bool result = true;
             //using(Stream source = File.OpenRead(mFilePath+"\\"+mFileName)) {
-            using (FileStream fs = new FileStream(mFullPath,
-                                           FileMode.Open,
-                                           FileAccess.Read))
+            using (mFs = new FileStream(mFullPath,FileMode.Open,FileAccess.Read))
             {
-                Array.Clear(bufferBin, 0, bufferBin.Length);
-                byte[] buffer = bufferBin;
-                byte[] bPrefix;
-                int bytesRead;
-                long curRead = 0;
-                mSocClient.SetBinary();
-                while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+                try
                 {
-                    //취소시 취소처리
-                    if (IsCanceled) { return InternalCancelSending(); }
-                    //전송할 byte정보
-                    bPrefix = Utils.ConvertFileSizeToByteArray(bytesRead);
-                    curRead += bytesRead;
-                    stateObj.socMessage = string.Format("전송바이트Size[{0}]/[{1}]", curRead, stateObj.FileSize);
-                    Logger.info(stateObj);
-                    //전송할 byte정보 전송
-                    int bytePrefixSize = mSocClient.Send(bPrefix, bPrefix.Length);
-                    //전송할 스트림 전송
-                    int byteSize = mSocClient.Send(buffer, bytesRead);
-                    if (bytePrefixSize != bPrefix.Length || byteSize != bytesRead)
+                    Array.Clear(bufferBin, 0, bufferBin.Length);
+                    byte[] buffer = bufferBin;
+                    byte[] bPrefix;
+                    int bytesRead;
+                    long curRead = 0;
+                    mSocClient.SetBinary();
+                    while ((bytesRead = mFs.Read(buffer, 0, buffer.Length)) > 0)
                     {
-                        stateObj.status = SocHandlerStatus.FTP_END;
-                        stateObj.socMessage = string.Format("전송 Error : 확인Size[{0}]/전송Size[{1}] file[{0}]", bytesRead, byteSize, mFullPath);
-                        Logger.error(stateObj);
-                        OnSocStatusChangedOnError(new SocStatusEventArgs(stateObj));
-                        mSocClient.SetText();
-                        return false;
-                    }
-                    stateObj.bufferSize = bytesRead;
-                    stateObj.fileSizeDone = curRead;
-                    stateObj.status = SocHandlerStatus.FTP_SENDING;
-                    OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
+                        //취소시 취소처리
+                        if (IsCanceled) { 
+                            result = _InternalCancelSending();
+                            break;
+                        }
+                        //전송할 byte정보
+                        bPrefix = Utils.ConvertFileSizeToByteArray(bytesRead);
+                        curRead += bytesRead;
+                        stateObj.socMessage = string.Format("전송바이트Size[{0}]/[{1}]", curRead, stateObj.FileSize);
+                        Logger.info(stateObj);
+                        //전송할 byte정보 전송
+                        int bytePrefixSize = mSocClient.Send(bPrefix, bPrefix.Length);
+                        //전송할 스트림 전송
+                        int byteSize = mSocClient.Send(buffer, bytesRead);
+                        if (bytePrefixSize != bPrefix.Length || byteSize != bytesRead)
+                        {
+                            _internalHandleOnError(string.Format("전송 Error : 확인Size[{0}]/전송Size[{1}] file[{0}]", bytesRead, byteSize, mFullPath));
+                            result = false;
+                            break;
+                        }
+                        stateObj.bufferSize = bytesRead;
+                        stateObj.fileSizeDone = curRead;
+                        stateObj.status = SocHandlerStatus.FTP_SENDING;
+                        OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
 
-                    //수신정보 확인
-                    string line = mSocClient.ReadLine();
-                    if (line != string.Format(MsgDef.MSG_RCVCHECK_FMT, MsgDef.MSG_RCVCHECK, bytesRead))
-                    {
-                        stateObj.socMessage = string.Format("수신 SizeCheck Error Msg[{0}]/실제전송byte수[{1}]", line, bytesRead);
-                        Logger.error(stateObj);
-                        stateObj.status = SocHandlerStatus.FTP_END;
-                        OnSocStatusChangedOnError(new SocStatusEventArgs(stateObj));
-                        mSocClient.SetText();
-                        return false;
+                        //수신정보 확인
+                        string line = mSocClient.ReadLine();
+                        if (line == MsgDef.MSG_CANCEL)
+                        {
+                            result = _InternalCancelByServer();
+                            break;
+                        }
+                        else if (line == string.Format(MsgDef.MSG_RCVCHECK_FMT, MsgDef.MSG_RCVCHECK, bytesRead))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            _internalHandleOnError(string.Format("수신 SizeCheck Error Msg[{0}]/실제전송byte수[{1}]", line, bytesRead));
+                            result = false;
+                            break;
+                        }
                     }
                 }
+                finally
+                {
+                    if (mFs != null) mFs.Close();
+                    mSocClient.SetText();
+                }
             }
-            mSocClient.SetText();
-            return true;
+            return result;
         }
+
         //파일전송완료 메시지보냄
         public bool InternalSendCompleteMsg()
         {
-            return InternalSendMsg(MsgDef.MSG_COMPLETE);
+            return _InternalSendMsg(MsgDef.MSG_COMPLETE);
         }
         //파일전송취소 메시지보냄
         public bool InternalSendCancelMsg()
         {
-            return InternalSendMsg(MsgDef.MSG_CANCEL);
+            return _InternalSendMsg(MsgDef.MSG_CANCEL);
         }
 
-        public bool InternalSendMsg(string msgRequest)
+        private bool _InternalSendMsg(string msgRequest)
         {
             stateObj.socMessage = string.Format("메시지전송:Msg[{0}]/파일전송관련", msgRequest);
             Logger.info(stateObj);
@@ -194,8 +209,8 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             {
                 stateObj.socMessage = string.Format("메시지전송 Error:file[{0}]/파일전송관련", mFullPath);
                 Logger.error(stateObj);
-                if (stateObj.status != SocHandlerStatus.FTP_CANCELED)
-                    stateObj.status = SocHandlerStatus.FTP_END;
+                if (!StatusEnded())
+                    stateObj.status = SocHandlerStatus.FTP_ERROR;
                 OnSocStatusChangedOnError(new SocStatusEventArgs(stateObj));
                 return false;
             }
@@ -210,31 +225,54 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             {
                 stateObj.socMessage = string.Format("전송종료 메시지수신 Error:Unknown Msg[{0}] file[{1}]", stateObj.data, mFullPath);
                 Logger.error(stateObj);
-                if (stateObj.status != SocHandlerStatus.FTP_CANCELED)
+                if (!StatusEnded())
                     stateObj.status = SocHandlerStatus.FTP_END;
                 OnSocStatusChangedOnError(new SocStatusEventArgs(stateObj));
-                return true;
+                return false;
             }
 
             mSocClient.Close();
-            if (stateObj.status != SocHandlerStatus.FTP_CANCELED)
-                stateObj.status = SocHandlerStatus.FTP_END;
 
             stateObj.socMessage = string.Format("전송종료 메시지수신 Msg:{0}", MsgDef.MSG_BYE);
             Logger.info(stateObj);
-            OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
+            if (!StatusEnded())
+                stateObj.status = SocHandlerStatus.FTP_END;
 
+            OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
+            if (stateObj.status == SocHandlerStatus.FTP_ERROR)
+                return false;
+            else
+                return true;
+        }
+
+        public bool _InternalCancelByServer()
+        {
+            stateObj.socMessage = string.Format("수신취소 메시지수신");
+            Logger.info(stateObj);
+            stateObj.status = SocHandlerStatus.FTP_SERVER_CANCELED;
+            //OnSocStatusChanged(new SocStatusEventArgs(stateObj));
+            if (mFs != null) mFs.Close();
+            mSocClient.SetText();
             return true;
         }
 
-        public bool InternalCancelSending()
+        public bool _InternalCancelSending()
         {
-            stateObj.socMessage = string.Format("전송취소 메시지수신");
-            Logger.error(stateObj);
+            stateObj.socMessage = string.Format("전송취소");
+            Logger.info(stateObj);
             stateObj.status = SocHandlerStatus.FTP_CANCELED;
             //OnSocStatusChanged(new SocStatusEventArgs(stateObj));
+            if (mFs != null) mFs.Close();
             mSocClient.SetText();
             return true;
+        }
+
+        private bool StatusEnded()
+        {
+            return (stateObj.status == SocHandlerStatus.FTP_CANCELED
+                || stateObj.status == SocHandlerStatus.FTP_END
+                || stateObj.status == SocHandlerStatus.FTP_ERROR
+                || stateObj.status == SocHandlerStatus.FTP_SERVER_CANCELED);
         }
 
         public void CancelSending()

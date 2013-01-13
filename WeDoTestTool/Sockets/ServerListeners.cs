@@ -244,6 +244,48 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             return true;
         }
 
+        public int FTP_getActivePort()
+        {
+            try
+            {
+                lock (mClientTableLock)
+                {
+                    foreach (DictionaryEntry entry in mHtFtpListenerTable)
+                    {
+                        if ((int)entry.Key > 0)
+                            return (int)entry.Key;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                setErrorMessage(ex, "FTP get Port  실패");
+                return 0;
+            }
+            return 0;
+            
+        }
+
+        public bool FTP_cancel(int port)
+        {
+            Logger.info("FTP_cancel port[{0}]", port);
+            try
+            {
+                lock (mClientTableLock)
+                {
+                    if (mHtFtpListenerTable.ContainsKey(port))
+                    {
+                        ((FtpSocketListener)mHtFtpListenerTable[port]).CancelReceiving(null);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                setErrorMessage(ex, "FTP 전송취소 실패");
+                return false;
+            }
+            return true;
+        }
     }
 
     /**
@@ -270,6 +312,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         long rcvSize = 0;
         FileStream fs;
         bool closedOnError = false;
+        bool fileReceivingCanceled = false;
 
         FTPStatus transferStatus = FTPStatus.NONE;
 
@@ -345,6 +388,11 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             base.ReceiveMsg(client);
         }
 
+        public void CancelReceiving(object socObj)
+        {
+            fileReceivingCanceled = true;
+        }
+
         public override void ProcessMsg(object socObj)
         {
             base.ProcessMsg(socObj);
@@ -398,7 +446,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                         stateObj.data = MsgDef.MSG_BYE;
                         if (SendMsg(stateObj) == SocCode.SOC_ERR_CODE)
                         {
-                            closeOnError(stateObj, string.Format("파일수신종료메시지 전송에러:FTPStatus.SENT_DONE/Msg[{0}]", stateObj.data));
+                            closeOnError(stateObj, string.Format("파일수신종료메시지 전송에러:FTPStatus.RECEIVE_STREAM/Msg[{0}]", stateObj.data));
                         }
                         //종료로 상태변경
                         transferStatus = FTPStatus.SENT_BYE;
@@ -440,7 +488,22 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                     }
 
                     break;
-                    //수신완료
+                //수신취소
+                case FTPStatus.RECEIVE_CANCELED:
+                    //취소전송
+                    stateObj.data = MsgDef.MSG_CANCEL;
+                    if (SendMsg(stateObj) == SocCode.SOC_ERR_CODE)
+                    {
+                        closeOnError(stateObj, string.Format("파일수신취소메시지 전송에러:FTPStatus.RECEIVE_CANCELED/Msg[{0}]", stateObj.data));
+                    }
+                    //완료로 상태변경
+                    transferStatus = FTPStatus.SENT_DONE;
+                    stateObj.ftpStatus = FTPStatus.SENT_DONE;
+                    stateObj.socMessage = string.Format("파일수신취소/Msg[{0}]", stateObj.data);
+                    Logger.info(stateObj);
+                    OnSocStatusChangedOnInfo(new SocStatusEventArgs(stateObj));
+                    break;
+                //수신완료
                 case FTPStatus.SENT_DONE:
                     if (stateObj.Cmd == MsgDef.MSG_COMPLETE)
                     {
@@ -467,6 +530,11 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
                     break;
             }
             stateObj.socMessage = string.Format("Ftp ProcessMsg End");
+            if (fileReceivingCanceled)
+            {
+                transferStatus = FTPStatus.RECEIVE_CANCELED;
+                fileReceivingCanceled = false;
+            }
             Logger.debug(stateObj);
         }
     }

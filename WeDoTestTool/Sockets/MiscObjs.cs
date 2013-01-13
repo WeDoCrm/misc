@@ -70,6 +70,8 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         public MSGStatus msgStatus = MSGStatus.NONE;
         public FTPStatus ftpStatus = FTPStatus.NONE;
 
+        public bool needStopReceiving = false;
+
         public int ftpPort { get; set; }
 
         string fileName;
@@ -95,7 +97,6 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
             }
             set { fileSize = value; }
         }
-
 
         private void setFileInfo()
         {

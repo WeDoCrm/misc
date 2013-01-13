@@ -16,7 +16,7 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         public const string LOCAL_HOST = "127.0.0.1";
         public const int FTP_PORT = 1101;
         public const int WAIT_MIL_SEC = 1000;
-        public const string LOG_FILE = "log\\WeDoTestTool_";
+        public const string LOG_FILE = "WeDoTestTool_";
         public const string LOG_DIR = "log";
         public const string LOG_FILE_FMT = "yyyyMMdd";
         public const string LOG_DATE_TIME_FMT = "yyyy-MM-dd HH:mm:sss";
@@ -75,9 +75,11 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         FTP_SENDING = 6,
         FTP_END = 7,
         FTP_CANCELED = 8,
-        DISCONNECTED = 9,
-        LISTENING = 10,
-        STOP = 11
+        FTP_SERVER_CANCELED = 9,
+        FTP_ERROR = 10,
+        DISCONNECTED = 11,
+        LISTENING = 12,
+        STOP = 13
     }
 
     public enum FTPStatus
@@ -104,7 +106,8 @@ namespace Elegant.Ui.Samples.ControlsSample.Sockets
         RECEIVED_ACK = 6,
         SENT_ACK = 7,
         RECEIVED_BYE = 8,
-        SENT_BYE = 9
+        SENT_BYE = 9,
+        RECEIVE_CANCELED = 10
     }
 
     public enum MSGStatus
