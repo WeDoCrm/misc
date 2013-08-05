@@ -39,6 +39,7 @@ Module MiniCTI
     Public Const gsAppVersion As String = "Ver 2.1.1.2"
     Public gsPopUpOption As String = "MDI"
     Public LogName As String = "\log\DbMgmt_"
+    Public BulkFileName As String = "\log\DbBulkFile"
 
     Public gsUseARS As String = "N"
 
@@ -118,6 +119,8 @@ Module MiniCTI
     End Function
 
     Public Function IsHPNumber(ByVal num As String) As Boolean
+        num = num.Replace("-", "")
+
         If num.Trim() = "" Or num.Length > 11 Or num.Length < 10 Then
             Return False
         End If
@@ -153,6 +156,7 @@ Module MiniCTI
 
         Catch ex As Exception
             Call WriteLog("Error(XMLRead) : " & ex.ToString)
+            Throw New Exception(ex.ToString)
             Return ""
         End Try
 
@@ -164,22 +168,12 @@ Module MiniCTI
             DBConReadYn = "Y"
             gsUseARS = XmlRead(0, "worktype")
         Catch ex As Exception
+            Call WriteLog(ex.ToString)
+            Throw New Exception(ex.ToString)
             DBConReadYn = "N"
             gsConString = ""
         End Try
     End Sub
-
-    Public Function Find_Query(ByVal s_code As String) As String
-        Dim SQL As String = ""
-        Try
-            SQL = " SELECT '' S_MENU_NM,'XXXX' S_MENU_CD UNION ALL SELECT S_MENU_NM,S_MENU_CD FROM T_S_CODE WHERE  COM_CD = '" & gsCOM_CD & "' AND L_MENU_CD = '" & s_code & "'"
-        Catch ex As Exception
-            SQL = ""
-        End Try
-        Return SQL
-
-    End Function
-
 
     '**********************************************************************************************************
     '****************************** 모두 이함수 사용합시다 ****************************************************
@@ -192,9 +186,9 @@ Module MiniCTI
         Dim dt As New DataTable
         Dim temp As String = ""
 
-
-
         Try
+            Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.WaitCursor
+
             con = New MySqlClient.MySqlConnection(constring)
             com = New MySqlClient.MySqlCommand(strSql, con)
             da = New MySqlClient.MySqlDataAdapter(com)
@@ -207,6 +201,7 @@ Module MiniCTI
 
         Catch ex As Exception
             Call WriteLog(ex.ToString)
+            Throw New Exception("GetData_table1 Error")
         Finally
             GetData_table1 = dt
             con.Close()
@@ -215,6 +210,8 @@ Module MiniCTI
             da = Nothing
             com = Nothing
             con = Nothing
+            Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default
+
         End Try
     End Function
 
@@ -227,6 +224,8 @@ Module MiniCTI
         Dim temp As String = ""
 
         Try
+            Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.WaitCursor
+
             con = New MySqlClient.MySqlConnection(constring)
             com = New MySqlClient.MySqlCommand(strSql, con)
             da = New MySqlClient.MySqlDataAdapter(com)
@@ -236,7 +235,9 @@ Module MiniCTI
 
             con.Open()
             da.Fill(dt)
-
+        Catch ex As Exception
+            Call WriteLog(ex.ToString)
+            Throw New Exception("GetData_table_Error")
         Finally
             GetData_table_Error = dt
             con.Close()
@@ -244,6 +245,8 @@ Module MiniCTI
             da = Nothing
             com = Nothing
             con = Nothing
+            Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default
+
         End Try
     End Function
 
@@ -288,6 +291,7 @@ Module MiniCTI
         Catch ex As Exception
             bol = False
             Call WriteLog("Exception : " & ex.ToString)
+            Throw New Exception("GetData_exe")
         End Try
 
         Return bol
@@ -312,6 +316,26 @@ Module MiniCTI
 
             sw.WriteLine(strNow1)
             sw.WriteLine("          " & msg)
+
+            sw.Close()
+            fs = Nothing
+
+        Catch ex As Exception
+
+        End Try
+    End Sub
+
+    Public Sub WriteBulkDataFile(ByVal record As String)
+
+        Try
+
+            '파일 스트림 생성
+            Dim fs As FileStream = New FileStream(file_path & BulkFileName, FileMode.Append)
+
+            '파일 입력 작업을 위해 StreamWriter 객체를 얻는다
+            Dim sw As StreamWriter = New StreamWriter(fs, System.Text.Encoding.Default)
+
+            sw.WriteLine(record)
 
             sw.Close()
             fs = Nothing
@@ -383,9 +407,8 @@ Module MiniCTI
             com.Parameters.Clear()
         Catch ex As Exception
             Call WriteLog(ex.ToString)
-            Mysql_GetData_table = Nothing
+            Throw New Exception("Mysql_GetData_table")
         Finally
-            Mysql_GetData_table = dt
             con.Close()
             dt = Nothing
             da = Nothing
@@ -393,6 +416,7 @@ Module MiniCTI
             con = Nothing
             Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default
         End Try
+        Return dt
     End Function
 
     Public Function Mysql_Transact_Data(ByVal constring As String, ByVal sqltext As String, ByVal ParamArray parameters() As String) As Integer
@@ -421,10 +445,9 @@ Module MiniCTI
                 iRow = com.ExecuteNonQuery()
             End If
             com.Parameters.Clear()
-            Mysql_Transact_Data = iRow
         Catch ex As Exception
             Call WriteLog(ex.ToString)
-            Mysql_Transact_Data = 0
+            Throw New Exception("Mysql_Transact_Data")
         Finally
             con.Close()
             da = Nothing
@@ -432,6 +455,8 @@ Module MiniCTI
             con = Nothing
             Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default
         End Try
+
+        Return iRow
     End Function
 
 
@@ -461,10 +486,9 @@ Module MiniCTI
                 iRow = com.ExecuteNonQuery()
             End If
             com.Parameters.Clear()
-            Mysql_Command = iRow
         Catch ex As Exception
             Call WriteLog(ex.ToString)
-            Mysql_Command = -1
+            Throw New Exception("Mysql_Command")
         Finally
             con.Close()
             da = Nothing
@@ -472,6 +496,7 @@ Module MiniCTI
             con = Nothing
             Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default
         End Try
+        Return iRow
     End Function
 
     Public Sub CB_Set(ByVal constring As String, ByVal sqltext As String, ByVal obj As Object, ByVal TextField As String, ByVal ValueField As String, ByVal SelectValue As Object, ByVal ParamArray parameters() As String)
@@ -568,42 +593,6 @@ Module MiniCTI
         End Try
 
     End Sub
-
-    Public Function GetDataFromExcel(ByVal FilePath As String, ByVal FileExt As String) As DataTable
-        Dim constring As String
-
-        If FileExt.ToLower.Trim = "xls" Then
-            constring = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" & FilePath & _
-                    ";Extended Properties=""Excel 8.0;HDR=YES;IMEX=1;"""
-        Else  'FileExt.ToLower.Trim = "xlsx" Then
-            constring = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & FilePath & _
-                    ";Extended Properties=""Excel 12.0;HDR=YES;IMEX=1;"""
-        End If
-        Dim dt As New DataTable
-        Dim cn As New System.Data.OleDb.OleDbConnection(constring)
-        Try
-            cn.Open()
-            dt = cn.GetOleDbSchemaTable(OleDb.OleDbSchemaGuid.Tables, _
-                                        New Object() {Nothing, Nothing, Nothing, "TABLE"})
-            'For i = 0 To dt.Rows.Count - 1
-            '    MessageBox.Show(dt.Rows(i)("TABLE_NAME"))
-            'Next
-
-            dt.Reset()
-            Dim com As New OleDb.OleDbCommand("SELECT * FROM [" & gsExcelSheetCustomer & "$]", cn)
-            Dim Adapter As New System.Data.OleDb.OleDbDataAdapter()
-            Adapter.SelectCommand = com
-            Adapter.Fill(dt)
-            'WriteLog("GetDataFromExcel Rows.Count - " & dt.Rows.Count & " / " & dt.Rows(0)(0).ToString)
-        Catch ex As Exception
-            WriteLog(ex.ToString)
-        Finally
-            GetDataFromExcel = dt
-            cn.Close()
-            dt.Dispose()
-            cn.Dispose()
-        End Try
-    End Function
 
     Public Function Get_TELNO(ByVal tenno1 As String)
         Dim telno As String = tenno1.Replace("-", "").Trim
@@ -718,25 +707,6 @@ Module MiniCTI
         End If
     End Sub
 
-    Public Function IsT_CustomerTablePatched(ByVal tableName As String, ByVal columnName As String)
-        Dim dt1 As DataTable
-        Try
-            Dim SQL As String = " SELECT COMPANY FROM t_customer "
-            SQL = SQL & " limit 1"
-
-            dt1 = GetData_table_Error(gsConString, SQL)
-            Dim CNT As String = "0"
-
-            CNT = dt1.Rows.Count
-            Return True
-        Catch ex As Exception
-            Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default
-            Call WriteLog(":IsT_CustomerTablePatched:" & ex.ToString)
-            Return False
-        Finally
-            dt1 = Nothing
-        End Try
-    End Function
 
     'Mysql_Transact_Data
     Public Function doCommandSql(ByVal Sql As String) As Boolean
@@ -775,6 +745,19 @@ Module MiniCTI
         Return isGood
     End Function
 
+    Public Function ToQuotedStr(ByVal value As String) As String
+        Return value.Trim.Replace("'", "''")
+    End Function
+
+    Public sqlCustomerFields As String = "COM_CD, CUSTOMER_ID, CUSTOMER_NM, C_TELNO, H_TELNO, FAX_NO, COMPANY, DEPARTMENT " & _
+                                         ", JOB_TITLE, EMAIL, CUSTOMER_TYPE, WOO_NO, CUSTOMER_ADDR, CUSTOMER_ETC, C_TELNO1, H_TELNO1, UPDATE_DATE, TEMP_ID " & _
+                                         ", TONG_USER, USER_DEF"
+
+    Public sqlCustomerHistoryFields As String = "COM_CD, CUSTOMER_ID, TOND_DD, TONG_TIME, TONG_USER, CALL_TYPE " & _
+                                                ", CONSULT_RESULT, CONSULT_TYPE, TONG_CONTENTS, TONG_TELNO, TELNO_TYPE, CUSTOMER_NM " & _
+                                                ", BK_YN, HANDLE_TYPE, CALL_BACK_YN, CALL_BACK_RESULT, CALL_BACK_AGENT, UPDATE_DATE " & _
+                                                ", PREV_TONG_DD, PREV_TONG_TIME, PREV_TONG_USER, TRANS_YN, TEMP_ID "
+
     Public sqlUpdateCustomerId As String = "  set customer_id = (select max(a.customer_id) from t_customer a,  " & _
                                     "  												       t_customer_excel_backup b " & _
                                     "  												 where a.customer_nm = b.customer_nm " & _
@@ -794,6 +777,8 @@ Module MiniCTI
 
     Public sqlUpdateCustomerHistory As String = " update t_customer_history c " & sqlUpdateCustomerId
 
+    Public sqlDropCustomerExcelBackup As String = " DROP TABLE `t_customer_excel_backup`; "
+
     Public sqlCreateCustomerExcelBackup As String = " CREATE TABLE `t_customer_excel_backup` ( " & _
                                                 "   `COM_CD` varchar(4) NOT NULL, " & _
                                                 "   `CUSTOMER_ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT, " & _
@@ -806,19 +791,24 @@ Module MiniCTI
                                                 "   `JOB_TITLE` varchar(100) DEFAULT NULL, " & _
                                                 "   `EMAIL` varchar(100) DEFAULT NULL, " & _
                                                 "   `CUSTOMER_TYPE` varchar(4) DEFAULT NULL, " & _
+                                                "   `TEMP_ID` varchar(40) DEFAULT NULL, " & _
                                                 "   `WOO_NO` varchar(8) DEFAULT NULL, " & _
                                                 "   `CUSTOMER_ADDR` varchar(120) DEFAULT NULL, " & _
                                                 "   `CUSTOMER_ETC` varchar(100) DEFAULT NULL, " & _
                                                 "   `C_TELNO1` varchar(20) DEFAULT NULL, " & _
                                                 "   `H_TELNO1` varchar(20) DEFAULT NULL, " & _
+                                                "   `TONG_USER` varchar(45) DEFAULT NULL, " & _
+                                                "   `USER_DEF`  varchar(100) DEFAULT NULL, " & _
                                                 "   `UPDATE_DATE` varchar(14) DEFAULT NULL, " & _
                                                 "   PRIMARY KEY (`CUSTOMER_ID`), " & _
                                                 "   KEY `idx_T_CUSTOMER_EXCEL_BACKUP01` (`COM_CD`,`CUSTOMER_ID`), " & _
                                                 "   KEY `idx_T_CUSTOMER_EXCEL_BACKUP02` (`C_TELNO1`), " & _
-                                                "   KEY `idx_T_CUSTOMER_EXCEL_BACKUP03` (`H_TELNO1`) " & _
+                                                "   KEY `idx_T_CUSTOMER_EXCEL_BACKUP03` (`H_TELNO1`), " & _
+                                                "   KEY `idx_T_CUSTOMER_EXCEL_BACKUP04` (`TEMP_ID`) " & _
                                                 " ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=euckr; "
 
- 
+    Public sqlDropCustomerExcelTmp As String = " DROP TABLE `t_customer_excel_tmp`; "
+
     Public sqlCreateCustomerExcelTmp As String = " CREATE TABLE `t_customer_excel_tmp` ( " & _
                                                 "   `COM_CD` varchar(4) NOT NULL, " & _
                                                 "   `CUSTOMER_ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT, " & _
@@ -831,18 +821,25 @@ Module MiniCTI
                                                 "   `JOB_TITLE` varchar(100) DEFAULT NULL, " & _
                                                 "   `EMAIL` varchar(100) DEFAULT NULL, " & _
                                                 "   `CUSTOMER_TYPE` varchar(4) DEFAULT NULL, " & _
+                                                "   `TEMP_ID` varchar(40) DEFAULT NULL, " & _
                                                 "   `WOO_NO` varchar(8) DEFAULT NULL, " & _
                                                 "   `CUSTOMER_ADDR` varchar(120) DEFAULT NULL, " & _
                                                 "   `CUSTOMER_ETC` varchar(100) DEFAULT NULL, " & _
                                                 "   `C_TELNO1` varchar(20) DEFAULT NULL, " & _
                                                 "   `H_TELNO1` varchar(20) DEFAULT NULL, " & _
+                                                "   `TONG_USER` varchar(45) DEFAULT NULL, " & _
+                                                "   `USER_DEF`  varchar(100) DEFAULT NULL, " & _
                                                 "   `UPDATE_DATE` varchar(14) DEFAULT NULL, " & _
                                                 "   `UPLOAD_RESULT` varchar(1) DEFAULT NULL, " & _
                                                 "   PRIMARY KEY (`CUSTOMER_ID`), " & _
                                                 "   KEY `idx_T_CUSTOMER_EXCEL_TMP01` (`COM_CD`,`CUSTOMER_ID`), " & _
                                                 "   KEY `idx_T_CUSTOMER_EXCEL_TMP02` (`C_TELNO1`), " & _
-                                                "   KEY `idx_T_CUSTOMER_EXCEL_TMP03` (`H_TELNO1`) " & _
+                                                "   KEY `idx_T_CUSTOMER_EXCEL_TMP03` (`H_TELNO1`), " & _
+                                                "   KEY `idx_T_CUSTOMER_EXCEL_TMP04` (`TEMP_ID`) " & _
                                                 " ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=euckr; "
+
+    Public sqlDropCustomerHistoryExcelBackup As String = " DROP TABLE `t_customer_history_excel_backup`; "
+
     Public sqlCreateCustomerHistoryExcelBackup As String = "CREATE TABLE `t_customer_history_excel_backup` ( " & _
                                                         "   `COM_CD` varchar(4) NOT NULL, " & _
                                                         "   `CUSTOMER_ID` bigint(20) unsigned NOT NULL, " & _
@@ -866,13 +863,18 @@ Module MiniCTI
                                                         "   `PREV_TONG_TIME` varchar(6) DEFAULT NULL, " & _
                                                         "   `PREV_TONG_USER` varchar(45) DEFAULT NULL, " & _
                                                         "   `TRANS_YN` varchar(1) DEFAULT NULL, " & _
+                                                        "   `TEMP_ID` varchar(40) DEFAULT NULL, " & _
                                                         "   PRIMARY KEY (`COM_CD`,`CUSTOMER_ID`,`TOND_DD`,`TONG_TIME`,`TONG_USER`), " & _
                                                         "   KEY `idx_T_CUSTOMER_HISTORY_EXCEL_BACKUP01` (`COM_CD`,`CUSTOMER_ID`,`TOND_DD`,`TONG_TIME`,`TONG_USER`), " & _
                                                         "   KEY `idx_T_CUSTOMER_HISTORY_EXCEL_BACKUP02` (`COM_CD`,`TOND_DD`,`TONG_TIME`,`TONG_USER`), " & _
                                                         "   KEY `idx_T_CUSTOMER_HISTORY_EXCEL_BACKUP03` (`CUSTOMER_NM`), " & _
-                                                        "   KEY `idx_T_CUSTOMER_HISTORY_EXCEL_BACKUP04` (`PREV_TONG_DD`,`PREV_TONG_TIME`,`PREV_TONG_USER`,`TRANS_YN`) USING BTREE " & _
+                                                        "   KEY `idx_T_CUSTOMER_HISTORY_EXCEL_BACKUP04` (`PREV_TONG_DD`,`PREV_TONG_TIME`,`PREV_TONG_USER`,`TRANS_YN`) USING BTREE, " & _
+                                                        "   KEY `idx_T_CUSTOMER_HISTORY_EXCEL_BACKUP05` (`TEMP_ID`) " & _
                                                         " ) ENGINE=InnoDB DEFAULT CHARSET=euckr; "
-    Public sqlCustomerTelnoExcelBackup As String = "CREATE TABLE `t_customer_telno_excel_backup` ( " & _
+
+    Public sqlDropCustomerTelnoExcelBackup As String = " DROP TABLE `t_customer_telno_excel_backup`; "
+
+    Public sqlCreateCustomerTelnoExcelBackup As String = "CREATE TABLE `t_customer_telno_excel_backup` ( " & _
                                                 "   `COM_CD` varchar(4) NOT NULL, " & _
                                                 "   `CUSTOMER_ID` bigint(20) unsigned NOT NULL, " & _
                                                 "   `TELNO_TYPE` varchar(4) DEFAULT NULL, " & _
@@ -881,8 +883,8 @@ Module MiniCTI
                                                 "   KEY `idxt_customer_telno_excel_backup01` (`COM_CD`,`CUSTOMER_ID`) " & _
                                                 " ) ENGINE=InnoDB DEFAULT CHARSET=euckr; "
 
-    Public sqlCustomerUpdateOld As String = "insert into t_customer " & _
-                                            "select * from t_customer_excel_backup a " & _
+    Public sqlCustomerUpdateOld As String = "insert into t_customer (" & sqlCustomerFields & ")" & _
+                                            "select " & sqlCustomerFields & " from t_customer_excel_backup a " & _
                                             "where not exists ( " & _
                                             "select 1  " & _
                                             "from t_customer_excel_tmp b " & _
@@ -890,6 +892,7 @@ Module MiniCTI
                                             "  and b.C_TELNO = a.C_TELNO " & _
                                             "  and b.H_TELNO = a.H_TELNO " & _
                                             ") "
+
     Public sqlCustomerUpdateNew As String = " INSERT INTO T_CUSTOMER " & _
                                             " 			 (COM_CD,CUSTOMER_NM,   " & _
                                             "        COMPANY,DEPARTMENT,JOB_TITLE,   " & _
@@ -901,5 +904,4 @@ Module MiniCTI
                                             "        CUSTOMER_ADDR,CUSTOMER_ETC,C_TELNO1,H_TELNO1 " & _
                                             "   from t_customer_excel_tmp " & _
                                             "  where upload_result = '0' "
-
 End Module

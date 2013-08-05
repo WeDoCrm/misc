@@ -31,6 +31,7 @@ Partial Class MainFrmCDB
         Me.TextBox2 = New System.Windows.Forms.TextBox
         Me.btnDelete = New System.Windows.Forms.Button
         Me.gbUpload = New System.Windows.Forms.GroupBox
+        Me.cbMergeYN = New System.Windows.Forms.CheckBox
         Me.btnResult = New System.Windows.Forms.Button
         Me.TextBox4 = New System.Windows.Forms.TextBox
         Me.btnUpload = New System.Windows.Forms.Button
@@ -45,7 +46,9 @@ Partial Class MainFrmCDB
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog
         Me.GroupBox1 = New System.Windows.Forms.GroupBox
         Me.lblCompany = New System.Windows.Forms.Label
-        Me.cbMergeYN = New System.Windows.Forms.CheckBox
+        Me.TimerUpload = New System.Windows.Forms.Timer(Me.components)
+        Me.BackgroundWorkerMain = New System.ComponentModel.BackgroundWorker
+        Me.Button1 = New System.Windows.Forms.Button
         Me.gbBackup.SuspendLayout()
         Me.gbDelete.SuspendLayout()
         Me.gbUpload.SuspendLayout()
@@ -129,6 +132,17 @@ Partial Class MainFrmCDB
         Me.gbUpload.TabIndex = 3
         Me.gbUpload.TabStop = False
         Me.gbUpload.Text = "고객정보 불러오기"
+        '
+        'cbMergeYN
+        '
+        Me.cbMergeYN.AutoSize = True
+        Me.cbMergeYN.Font = New System.Drawing.Font("굴림", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(129, Byte))
+        Me.cbMergeYN.Location = New System.Drawing.Point(149, 40)
+        Me.cbMergeYN.Name = "cbMergeYN"
+        Me.cbMergeYN.Size = New System.Drawing.Size(194, 17)
+        Me.cbMergeYN.TabIndex = 3
+        Me.cbMergeYN.Text = "백업된 기존 고객정보와 취합"
+        Me.cbMergeYN.UseVisualStyleBackColor = True
         '
         'btnResult
         '
@@ -245,22 +259,26 @@ Partial Class MainFrmCDB
         Me.lblCompany.TabIndex = 0
         Me.lblCompany.Text = "Label1"
         '
-        'cbMergeYN
+        'TimerUpload
         '
-        Me.cbMergeYN.AutoSize = True
-        Me.cbMergeYN.Font = New System.Drawing.Font("Gulim", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(129, Byte))
-        Me.cbMergeYN.Location = New System.Drawing.Point(149, 40)
-        Me.cbMergeYN.Name = "cbMergeYN"
-        Me.cbMergeYN.Size = New System.Drawing.Size(194, 17)
-        Me.cbMergeYN.TabIndex = 3
-        Me.cbMergeYN.Text = "백업된 기존 고객정보와 취합"
-        Me.cbMergeYN.UseVisualStyleBackColor = True
+        Me.TimerUpload.Interval = 1000
+        '
+        'Button1
+        '
+        Me.Button1.Location = New System.Drawing.Point(461, 371)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(75, 23)
+        Me.Button1.TabIndex = 7
+        Me.Button1.Text = "Button1"
+        Me.Button1.UseVisualStyleBackColor = True
+        Me.Button1.Visible = False
         '
         'MainFrmCDB
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(702, 454)
+        Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.GroupBox1)
         Me.Controls.Add(Me.StatusStrip1)
         Me.Controls.Add(Me.gbRecovery)
@@ -308,4 +326,7 @@ Partial Class MainFrmCDB
     Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
     Friend WithEvents lblCompany As System.Windows.Forms.Label
     Friend WithEvents cbMergeYN As System.Windows.Forms.CheckBox
+    Friend WithEvents TimerUpload As System.Windows.Forms.Timer
+    Friend WithEvents BackgroundWorkerMain As System.ComponentModel.BackgroundWorker
+    Friend WithEvents Button1 As System.Windows.Forms.Button
 End Class

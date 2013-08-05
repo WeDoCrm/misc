@@ -77,16 +77,21 @@
     <Optimize>true</Optimize>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
     <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Elegant.Ui.Common, Version=4.2.0.0, Culture=neutral, PublicKeyToken=3a2b400713aae6e0" />
     <Reference Include="Elegant.Ui.NavigationBar, Version=4.2.0.0, Culture=neutral, PublicKeyToken=3a2b400713aae6e0" />
     <Reference Include="Elegant.Ui.Ribbon, Version=4.2.0.0, Culture=neutral, PublicKeyToken=3a2b400713aae6e0" />
+    <Reference Include="Excel, Version=2.1.0.0, Culture=neutral, PublicKeyToken=93517dbe6a4012fa, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Add\Excel.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" />
     <Reference Include="Microsoft.Office.Tools.Excel, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files\Reference Assemblies\Microsoft\VSTO\v8.0\Microsoft.Office.Tools.Excel.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.VisualBasic.PowerPacks.Vs, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="mysql.data, Version=6.4.3.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL" />
@@ -110,6 +115,12 @@
     <Import Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FRM_NOTICE_MSG.Designer.vb">
+      <DependentUpon>FRM_NOTICE_MSG.vb</DependentUpon>
+    </Compile>
+    <Compile Include="FRM_NOTICE_MSG.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FRM_RESULT.designer.vb">
       <DependentUpon>FRM_RESULT.vb</DependentUpon>
     </Compile>
@@ -147,6 +158,10 @@
     <Compile Include="Settings.vb" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="FRM_NOTICE_MSG.resx">
+      <DependentUpon>FRM_NOTICE_MSG.vb</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="FRM_RESULT.resx">
       <DependentUpon>FRM_RESULT.vb</DependentUpon>
       <SubType>Designer</SubType>
@@ -226,6 +241,8 @@
     <Content Include="Add\Elegant.Ui.Common.dll" />
     <Content Include="Add\Elegant.Ui.NavigationBar.dll" />
     <Content Include="Add\Elegant.Ui.Ribbon.dll" />
+    <Content Include="Add\Excel.dll" />
+    <Content Include="Add\ICSharpCode.SharpZipLib.dll" />
     <Content Include="Add\mysql.data.dll" />
     <Content Include="Add\Shellstyle.dll" />
     <Content Include="Add\SkinSoft.AquaSkin.Design.dll" />
@@ -235,12 +252,12 @@
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
       <Visible>False</Visible>
-      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <ProductName>.NET Framework 2.0%28x86%29</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
       <Visible>False</Visible>
-      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <ProductName>.NET Framework 3.0%28x86%29</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
